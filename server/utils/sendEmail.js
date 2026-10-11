@@ -12,7 +12,7 @@ const sendEmail = async (options) => {
 
   // Define the email options
   const mailOptions = {
-    from: `Smart Travel Planner <${process.env.EMAIL_USERNAME}>`,
+    from: `Bagsy <${process.env.EMAIL_USERNAME}>`,
     to: options.email,
     subject: options.subject,
     text: options.message,

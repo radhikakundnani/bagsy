@@ -21,7 +21,7 @@ app.use('/api/reminders', require('./routes/reminderRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Smart Travel Planner API is running' });
+  res.json({ message: 'Bagsy API is running' });
 });
 
 // Error handler (must be after routes)

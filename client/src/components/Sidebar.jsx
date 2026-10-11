@@ -63,8 +63,8 @@ export default function Sidebar() {
     <aside className="fixed top-0 left-0 h-screen w-[150px] bg-brown flex flex-col z-50">
       <div className="px-4 pt-6 pb-8">
         <h1 className="text-sm font-bold tracking-wider">
-          <span className="text-orange">SMART</span>{' '}
-          <span className="text-beige">TRAVEL</span>
+          <span className="text-orange">BAG</span>
+          <span className="text-beige">SY</span>
         </h1>
       </div>
 

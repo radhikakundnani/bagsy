@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "Smart Travel Planner - Backend API",
+  "description": "Bagsy - Backend API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
