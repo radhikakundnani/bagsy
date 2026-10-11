@@ -7,12 +7,16 @@ const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'Please provide a name'],
+    trim: true,
+    maxlength: [60, 'Name must be 60 characters or fewer'],
   },
   email: {
     type: String,
     required: [true, 'Please provide an email'],
     unique: true,
     lowercase: true,
+    trim: true,
+    maxlength: [254, 'Email is too long'],
     match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
   },
   password: {
@@ -36,7 +40,7 @@ const userSchema = new mongoose.Schema({
 
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
-  const salt = await bcrypt.genSalt(10);
+  const salt = await bcrypt.genSalt(12); // higher = slower to crack, still fast enough to log in
   this.password = await bcrypt.hash(this.password, salt);
 });
 

@@ -4,6 +4,8 @@ const packingItemSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
+    trim: true,
+    maxlength: [100, 'Item name must be 100 characters or fewer'],
   },
   category: {
     type: String,
@@ -48,7 +50,10 @@ const packingListSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  items: [packingItemSchema],
+  items: {
+    type: [packingItemSchema],
+    validate: [(items) => items.length <= 300, 'A list can have at most 300 items'],
+  },
   suggestions: [suggestionSchema],
   createdAt: {
     type: Date,

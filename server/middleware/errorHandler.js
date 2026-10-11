@@ -1,6 +1,10 @@
 const errorHandler = (err, req, res, next) => {
-  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  // Errors from Express itself (too-large or malformed requests) carry their own status code
+  let statusCode = err.status || err.statusCode || (res.statusCode === 200 ? 500 : res.statusCode);
   let message = err.message;
+
+  if (err.type === 'entity.too.large') message = 'That request is too large.';
+  if (err.type === 'entity.parse.failed') message = 'That request was not valid JSON.';
 
   // Mongoose bad ObjectId (CastError)
   if (err.name === 'CastError' && err.kind === 'ObjectId') {
@@ -33,10 +37,17 @@ const errorHandler = (err, req, res, next) => {
     message = 'Token has expired';
   }
 
+  // Unexpected server errors: log the details, but don't show them to users (they can reveal how the app works)
+  const isDev = process.env.NODE_ENV === 'development';
+  if (statusCode >= 500) {
+    console.error(err);
+    if (!isDev) message = 'Something went wrong on our side. Please try again.';
+  }
+
   res.status(statusCode).json({
     success: false,
     message,
-    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
+    ...(isDev ? { stack: err.stack } : {}),
   });
 };
 

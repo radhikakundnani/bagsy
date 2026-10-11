@@ -11,7 +11,12 @@ const protect = async (req, res, next) => {
     try {
       token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await User.findById(decoded.id).select('-password');
+      req.user = await User.findById(decoded.id).select('-password -resetPasswordToken -resetPasswordExpire');
+      // The token is valid but the account no longer exists
+      if (!req.user) {
+        res.status(401);
+        return next(new Error('Not authorized, account not found'));
+      }
       next();
     } catch (error) {
       res.status(401);
