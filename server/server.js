@@ -1,32 +1,13 @@
-const express = require('express');
-const cors = require('cors');
 const dotenv = require('dotenv');
-const connectDB = require('./config/db');
-const errorHandler = require('./middleware/errorHandler');
 
 dotenv.config();
 
-const app = express();
+const { checkConfig } = require('./middleware/security');
+const connectDB = require('./config/db');
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+checkConfig(); // stop early if secrets are missing
 
-// Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/trips', require('./routes/tripRoutes'));
-app.use('/api/packing', require('./routes/packingRoutes'));
-app.use('/api/weather', require('./routes/weatherRoutes'));
-app.use('/api/reminders', require('./routes/reminderRoutes'));
-app.use('/api/profile', require('./routes/profileRoutes'));
-
-app.get('/', (req, res) => {
-  res.json({ message: 'Bagsy API is running' });
-});
-
-// Error handler (must be after routes)
-app.use(errorHandler);
-
+const app = require('./app');
 const PORT = process.env.PORT || 5001;
 
 connectDB().then(() => {

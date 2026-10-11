@@ -10,6 +10,8 @@ const tripSchema = new mongoose.Schema({
   destination: {
     type: String,
     required: [true, 'Please provide a destination'],
+    trim: true,
+    maxlength: [100, 'Destination must be 100 characters or fewer'],
   },
   startDate: {
     type: Date,
@@ -20,8 +22,9 @@ const tripSchema = new mongoose.Schema({
     required: [true, 'Please provide an end date'],
   },
   activities: {
-    type: [String],
+    type: [{ type: String, maxlength: 40 }],
     default: [],
+    validate: [(a) => a.length <= 30, 'Too many activities'],
   },
   tripType: {
     type: String,

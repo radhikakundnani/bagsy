@@ -2,19 +2,38 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
 const sendEmail = require('../utils/sendEmail');
+const { passwordProblem } = require('../utils/passwordRules');
 
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-};
+// Logins last 7 days, then the user signs in again
+const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+// Always treat these as plain text. Stops tricks like sending {"$ne": null} as an email
+// to make a database query match someone else (a "NoSQL injection").
+const text = (value) => (typeof value === 'string' ? value.trim() : '');
+
+const userResponse = (user) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  token: generateToken(user._id),
+});
 
 // POST /api/auth/signup
 const signup = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const name = text(req.body.name);
+    const email = text(req.body.email).toLowerCase();
+    const { password } = req.body;
 
     if (!name || !email || !password) {
       res.status(400);
       throw new Error('Please provide name, email, and password');
+    }
+
+    const problem = passwordProblem(password);
+    if (problem) {
+      res.status(400);
+      throw new Error(problem);
     }
 
     const existingUser = await User.findOne({ email });
@@ -24,16 +43,7 @@ const signup = async (req, res, next) => {
     }
 
     const user = await User.create({ name, email, password });
-
-    res.status(201).json({
-      success: true,
-      data: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        token: generateToken(user._id),
-      },
-    });
+    res.status(201).json({ success: true, data: userResponse(user) });
   } catch (error) {
     next(error);
   }
@@ -42,7 +52,8 @@ const signup = async (req, res, next) => {
 // POST /api/auth/login
 const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const email = text(req.body.email).toLowerCase();
+    const password = typeof req.body.password === 'string' ? req.body.password : '';
 
     if (!email || !password) {
       res.status(400);
@@ -50,20 +61,13 @@ const login = async (req, res, next) => {
     }
 
     const user = await User.findOne({ email });
+    // Same message whether the email or the password is wrong, so attackers can't tell which
     if (!user || !(await user.matchPassword(password))) {
       res.status(401);
       throw new Error('Invalid email or password');
     }
 
-    res.json({
-      success: true,
-      data: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        token: generateToken(user._id),
-      },
-    });
+    res.json({ success: true, data: userResponse(user) });
   } catch (error) {
     next(error);
   }
@@ -72,57 +76,41 @@ const login = async (req, res, next) => {
 // GET /api/auth/me
 const getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
-    res.json({
-      success: true,
-      data: user,
-    });
+    const user = await User.findById(req.user._id).select('-password -resetPasswordToken -resetPasswordExpire');
+    res.json({ success: true, data: user });
   } catch (error) {
     next(error);
   }
 };
 
 // POST /api/auth/forgotpassword
+// Always gives the same answer, so nobody can use this page to find out who has an account.
 const forgotPassword = async (req, res, next) => {
+  const genericReply = () =>
+    res.status(200).json({ success: true, data: 'If that email has an account, a reset link is on its way.' });
+
   try {
-    const user = await User.findOne({ email: req.body.email });
+    const email = text(req.body.email).toLowerCase();
+    const user = email ? await User.findOne({ email }) : null;
+    if (!user) return genericReply();
 
-    if (!user) {
-      res.status(404);
-      throw new Error('There is no user with that email');
-    }
-
-    // Get reset token
     const resetToken = user.getResetPasswordToken();
     await user.save({ validateBeforeSave: false });
 
-    // Create reset url
-    const resetUrl = `${req.protocol}://${req.get('host').replace(req.get('port') || '', '3000')}/reset-password/${resetToken}`;
-    
-    // Create direct frontend URL mapping assuming the frontend runs on 3000
-    const frontendUrl = process.env.NODE_ENV === 'production' 
-       ? `${req.protocol}://${req.get('host')}/reset-password/${resetToken}`
-       : `http://localhost:3000/reset-password/${resetToken}`;
-
-    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please click on the link below:\n\n${frontendUrl}\n\nIf you did not request this, please ignore this email.`;
+    // The link points at the website (CLIENT_URL), not at this API server
+    const clientUrl = (process.env.CLIENT_URL || 'http://localhost:3000').split(',')[0].replace(/\/$/, '');
+    const resetLink = `${clientUrl}/reset-password/${resetToken}`;
+    const message = `Someone (hopefully you) asked to reset your Bagsy password.\n\nSet a new one here (the link works for 10 minutes):\n${resetLink}\n\nIf this wasn't you, you can ignore this email.`;
 
     try {
-      await sendEmail({
-        email: user.email,
-        subject: 'Password reset token',
-        message,
-      });
-
-      res.status(200).json({ success: true, data: 'Email sent' });
+      await sendEmail({ email: user.email, subject: 'Reset your Bagsy password', message });
     } catch (err) {
-      console.log(err);
+      console.error(`Reset email failed: ${err.message}`);
       user.resetPasswordToken = undefined;
       user.resetPasswordExpire = undefined;
       await user.save({ validateBeforeSave: false });
-
-      res.status(500);
-      throw new Error('Email could not be sent');
     }
+    return genericReply();
   } catch (error) {
     next(error);
   }
@@ -131,37 +119,26 @@ const forgotPassword = async (req, res, next) => {
 // PUT /api/auth/resetpassword/:resettoken
 const resetPassword = async (req, res, next) => {
   try {
-    // Get hashed token
-    const resetPasswordToken = crypto
-      .createHash('sha256')
-      .update(req.params.resettoken)
-      .digest('hex');
+    const problem = passwordProblem(req.body.password);
+    if (problem) {
+      res.status(400);
+      throw new Error(problem);
+    }
 
-    const user = await User.findOne({
-      resetPasswordToken,
-      resetPasswordExpire: { $gt: Date.now() },
-    });
+    const resetPasswordToken = crypto.createHash('sha256').update(String(req.params.resettoken)).digest('hex');
+    const user = await User.findOne({ resetPasswordToken, resetPasswordExpire: { $gt: Date.now() } });
 
     if (!user) {
       res.status(400);
-      throw new Error('Invalid token');
+      throw new Error('This reset link has expired or is invalid. Ask for a new one.');
     }
 
-    // Set new password
     user.password = req.body.password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
     await user.save();
 
-    res.status(200).json({
-      success: true,
-      data: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        token: generateToken(user._id),
-      },
-    });
+    res.status(200).json({ success: true, data: userResponse(user) });
   } catch (error) {
     next(error);
   }
