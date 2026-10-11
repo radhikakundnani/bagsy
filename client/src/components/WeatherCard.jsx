@@ -25,7 +25,7 @@ export default function WeatherCard({ weather }) {
       </div>
       <p className="font-display text-5xl">{weather.temp != null ? `${Math.round(weather.temp)}°` : '—'}</p>
       <p className="mt-1 font-medium first-letter:uppercase">{weather.description || 'Unknown'}</p>
-      <dl className="mt-6 grid grid-cols-3 border-t-2 border-ink pt-4 text-center">
+      <dl className="mt-6 grid grid-cols-3 border-t border-ink pt-4 text-center">
         {stats.map(([label, value]) => (
           <div key={label}>
             <dt className="eyebrow">{label}</dt>

@@ -22,7 +22,7 @@ export default function AuthShell({ title, accent, intro, children }) {
         <div
           key={text}
           aria-hidden="true"
-          className={`absolute hidden items-center gap-2 rounded-xl border-2 border-ink px-4 py-3 text-sm font-bold shadow-pop lg:flex ${className}`}
+          className={`absolute hidden items-center gap-2 rounded-xl border border-ink px-4 py-3 text-sm font-bold shadow-pop lg:flex ${className}`}
         >
           <Icon size={16} strokeWidth={2.2} />
           {text}
@@ -30,7 +30,7 @@ export default function AuthShell({ title, accent, intro, children }) {
       ))}
 
       <div className="relative z-10 flex flex-1 items-center justify-center py-10">
-        <div className="animate-page-in w-full max-w-md rounded-2xl border-2 border-ink bg-card p-6 shadow-pop-lg sm:p-8">
+        <div className="animate-page-in w-full max-w-md rounded-2xl border border-ink bg-card p-6 shadow-pop-lg sm:p-8">
           <h1 className="font-display text-4xl">
             {title} {accent && <span className="font-accent text-[1.1em]">{accent}</span>}
           </h1>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Check, Eye, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Check, Eye, Plus, Sparkles, Trash2 } from 'lucide-react';
 import Layout from '../components/Layout';
+import SuggestionsPanel from '../components/SuggestionsPanel';
 import { Alert, Button, ProgressBar, Spinner, Title, Toast, inputClass } from '../components/ui';
 import { CATEGORIES, CATEGORY_ORDER } from '../utils/tripMeta';
 import API from '../api/axios';
@@ -31,6 +32,7 @@ export default function PackingList() {
   const [toast, setToast] = useState(null);
   const [filter, setFilter] = useState('all');
   const [justTicked, setJustTicked] = useState(null);
+  const [brief, setBrief] = useState('');
 
   const [newItemName, setNewItemName] = useState('');
   const [newItemCategory, setNewItemCategory] = useState('misc');
@@ -39,7 +41,10 @@ export default function PackingList() {
   useEffect(() => {
     setLoading(true);
     API.get(`/packing/${id}`, { params: memberId ? { member: memberId } : {} })
-      .then((res) => setPackingList(res.data.data))
+      .then((res) => {
+        setPackingList(res.data.data);
+        setBrief(res.data.data.brief || '');
+      })
       .catch((err) => setError(err.response?.data?.message || "We couldn't load this packing list."))
       .finally(() => setLoading(false));
   }, [id, memberId]);
@@ -137,7 +142,7 @@ export default function PackingList() {
       </div>
 
       {readOnly && (
-        <div className="mt-6 flex items-center gap-2 rounded-xl border-2 border-ink bg-sky px-4 py-3 text-sm font-medium">
+        <div className="mt-6 flex items-center gap-2 rounded-xl border border-ink bg-sky px-4 py-3 text-sm font-medium">
           <Eye size={18} strokeWidth={2.2} aria-hidden="true" />
           You're viewing {ownerFirstName}'s list as the trip admin. Only they can tick things off.
         </div>
@@ -145,7 +150,7 @@ export default function PackingList() {
 
       <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr] lg:items-start">
         {/* Summary that stays in view */}
-        <aside className="flex flex-col gap-6 rounded-2xl border-2 border-ink bg-card p-6 shadow-pop lg:sticky lg:top-24">
+        <aside className="flex flex-col gap-6 rounded-2xl border border-ink bg-card p-6 shadow-pop lg:sticky lg:top-24">
           <div>
             <p className="eyebrow">Progress</p>
             <p className="font-display mt-2 text-4xl tabular-nums">
@@ -165,7 +170,7 @@ export default function PackingList() {
                   type="button"
                   aria-pressed={filter === f.value}
                   onClick={() => setFilter(f.value)}
-                  className={`smooth rounded-full border-2 border-ink px-3 py-1 text-sm font-bold ${filter === f.value ? 'bg-ink text-card' : 'bg-card hover:bg-sun'}`}
+                  className={`smooth rounded-full border border-ink px-3 py-1 text-sm font-bold ${filter === f.value ? 'bg-ink text-card' : 'bg-card hover:bg-sun'}`}
                 >
                   {f.label}
                 </button>
@@ -176,7 +181,11 @@ export default function PackingList() {
           <nav aria-label="Jump to category" className="hidden lg:block">
             <p className="eyebrow">Jump to</p>
             <ul className="mt-2 flex flex-col">
-              {categories.map((cat) => {
+              {!readOnly && (
+            <SuggestionsPanel tripId={id} packingList={packingList} brief={brief} onListChange={setPackingList} showToast={showToast} />
+          )}
+
+          {categories.map((cat) => {
                 const { label, icon: Icon } = CATEGORIES[cat];
                 return (
                   <li key={cat}>
@@ -228,8 +237,8 @@ export default function PackingList() {
             if (shown.length === 0) return null;
             const packed = list.filter((i) => i.isPacked).length;
             return (
-              <section key={cat} id={`cat-${cat}`} className="scroll-mt-24 overflow-hidden rounded-2xl border-2 border-ink bg-card">
-                <h2 className={`flex items-center justify-between gap-3 border-b-2 border-ink px-6 py-3 ${tint}`}>
+              <section key={cat} id={`cat-${cat}`} className="scroll-mt-24 overflow-hidden rounded-2xl border border-ink bg-card">
+                <h2 className={`flex items-center justify-between gap-3 border-b border-ink px-6 py-3 ${tint}`}>
                   <span className="font-display inline-flex items-center gap-2 text-lg">
                     <Icon size={20} strokeWidth={2.2} aria-hidden="true" />
                     {label}
@@ -248,14 +257,19 @@ export default function PackingList() {
                         aria-label={`${item.isPacked ? 'Unpack' : 'Pack'} ${item.name}`}
                         onClick={() => toggleItem(item._id)}
                         disabled={readOnly}
-                        className={`smooth flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 border-ink disabled:cursor-default ${
+                        className={`smooth flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-ink disabled:cursor-default ${
                           item.isPacked ? 'bg-ink text-card' : 'bg-card enabled:hover:bg-sun'
                         } ${justTicked === item._id ? 'animate-tick' : ''}`}
                       >
                         {item.isPacked && <Check size={16} strokeWidth={3} aria-hidden="true" />}
                       </button>
                       <span className={`flex-1 ${item.isPacked ? 'text-muted line-through' : ''}`}>{item.name}</span>
-                      {item.isCustom && <span className="rounded-full border-2 border-ink px-2 py-0.5 text-[11px] font-bold">added</span>}
+                      {item.isSuggested && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-ink bg-lilac px-2 py-0.5 text-[11px] font-bold">
+                          <Sparkles size={11} strokeWidth={2.6} aria-hidden="true" /> suggested
+                        </span>
+                      )}
+                      {item.isCustom && <span className="rounded-full border border-ink px-2 py-0.5 text-[11px] font-bold">added</span>}
                       {!readOnly && (
                         <button
                           type="button"
@@ -275,7 +289,7 @@ export default function PackingList() {
 
           {items.length === 0 && <p className="text-center text-muted">This list is empty.</p>}
           {items.length > 0 && filter !== 'all' && items.filter(visible).length === 0 && (
-            <p className="rounded-2xl border-2 border-dashed border-ink p-6 text-center text-muted">
+            <p className="rounded-2xl border border-dashed border-ink p-6 text-center text-muted">
               {filter === 'done' ? 'Nothing packed yet.' : 'Everything’s packed!'}
             </p>
           )}

@@ -23,7 +23,7 @@ export default function Layout({ children, wide = false }) {
 
   return (
     <div className="min-h-screen bg-paper text-ink">
-      <header className="sticky top-0 z-40 border-b-2 border-ink bg-card/95 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-ink bg-card/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:px-6">
           <Link to={token ? '/dashboard' : '/'} className="rounded-lg">
             <Logo />
@@ -80,7 +80,7 @@ export default function Layout({ children, wide = false }) {
 
       {token && (
         <nav
-          className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-ink bg-card md:hidden"
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-ink bg-card md:hidden"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
           aria-label="Main"
         >

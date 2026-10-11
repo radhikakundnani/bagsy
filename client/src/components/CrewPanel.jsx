@@ -93,7 +93,7 @@ export default function CrewPanel({ trip, onTripChange, showToast }) {
       </div>
 
       {isAdmin && inviteUrl && (
-        <div className="mt-4 flex flex-col gap-3 rounded-xl border-2 border-ink bg-sun p-4">
+        <div className="mt-4 flex flex-col gap-3 rounded-xl border border-ink bg-sun p-4">
           <label htmlFor="invite-link" className="text-sm font-bold">
             Invite link
           </label>
@@ -103,7 +103,7 @@ export default function CrewPanel({ trip, onTripChange, showToast }) {
               readOnly
               value={inviteUrl}
               onFocus={(e) => e.target.select()}
-              className="smooth w-full min-w-0 rounded-xl border-2 border-ink bg-card px-3 py-2 text-sm sm:flex-1"
+              className="smooth w-full min-w-0 rounded-xl border border-ink bg-card px-3 py-2 text-sm sm:flex-1"
             />
             <div className="flex gap-2">
               <Button size="sm" onClick={copyLink}>
@@ -123,7 +123,7 @@ export default function CrewPanel({ trip, onTripChange, showToast }) {
         {crew.map((person) => (
           <li key={person._id} className="flex flex-col gap-3 border-b border-ink/25 py-4 last:border-b-0 sm:flex-row sm:items-center">
             <div className="flex min-w-0 flex-1 items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-lilac font-bold" aria-hidden="true">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-ink bg-lilac font-bold" aria-hidden="true">
                 {person.name.charAt(0).toUpperCase()}
               </span>
               <div className="min-w-0 flex-1">

@@ -46,7 +46,7 @@ export default function Dashboard() {
       {reminders.length > 0 && (
         <div className="mt-10 flex flex-col gap-4">
           {reminders.map((r) => (
-            <div key={r.trip._id} className="flex flex-wrap items-center gap-4 rounded-2xl border-2 border-ink bg-sun p-6">
+            <div key={r.trip._id} className="flex flex-wrap items-center gap-4 rounded-2xl border border-ink bg-sun p-6">
               <IconBadge icon={AlarmClock} />
               <div className="min-w-0 flex-1">
                 <p className="font-bold">
@@ -73,7 +73,7 @@ export default function Dashboard() {
       {loading ? (
         <Spinner label="Loading trips" />
       ) : trips.length === 0 ? (
-        <div className="mt-10 flex flex-col items-center rounded-2xl border-2 border-dashed border-ink bg-card p-6 py-16 text-center">
+        <div className="mt-10 flex flex-col items-center rounded-2xl border border-dashed border-ink bg-card p-6 py-16 text-center">
           <IconBadge icon={Luggage} tint="bg-sun" size="lg" />
           <h2 className="font-display mt-6 text-3xl">Nothing packed yet</h2>
           <p className="mt-2 max-w-sm text-muted">Add your first trip and Bagsy will build the list for you.</p>

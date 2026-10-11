@@ -5,7 +5,7 @@ import Layout from '../components/Layout';
 import WeatherCard from '../components/WeatherCard';
 import CrewPanel from '../components/CrewPanel';
 import { Alert, Button, Card, ProgressBar, Spinner, Toast } from '../components/ui';
-import { activityMeta, formatDate, tripLength, tripTypeMeta } from '../utils/tripMeta';
+import { activityMeta, formatDate, occasionMeta, tripLength, tripTypeMeta } from '../utils/tripMeta';
 import API from '../api/axios';
 
 export default function TripDetails() {
@@ -112,12 +112,26 @@ export default function TripDetails() {
         <WeatherCard weather={trip.weather} />
         <Card shadow={false}>
           <p className="eyebrow">Plans</p>
+          {trip.brief && <p className="mt-3 border-l-2 border-ink pl-3 italic">“{trip.brief}”</p>}
+          {trip.occasions?.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {trip.occasions.map((value) => {
+                const { label, icon: Icon } = occasionMeta(value);
+                return (
+                  <span key={value} className="inline-flex items-center gap-1.5 rounded-full border border-ink bg-sun px-3 py-1 text-sm font-bold">
+                    <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
+                    {label}
+                  </span>
+                );
+              })}
+            </div>
+          )}
           {trip.activities?.length > 0 ? (
             <div className="mt-4 flex flex-wrap gap-2">
               {trip.activities.map((value) => {
                 const { label, icon: Icon } = activityMeta(value);
                 return (
-                  <span key={value} className="inline-flex items-center gap-1.5 rounded-full border-2 border-ink px-3 py-1 text-sm font-bold">
+                  <span key={value} className="inline-flex items-center gap-1.5 rounded-full border border-ink px-3 py-1 text-sm font-bold">
                     <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
                     {label}
                   </span>
@@ -125,13 +139,13 @@ export default function TripDetails() {
               })}
             </div>
           ) : (
-            <p className="mt-4 text-sm text-muted">No activities picked.</p>
+            !trip.occasions?.length && <p className="mt-4 text-sm text-muted">No plans picked.</p>
           )}
         </Card>
       </div>
 
       {isAdmin && (
-        <div className="mt-10 border-t-2 border-ink/20 pt-6">
+        <div className="mt-10 border-t border-ink/20 pt-6">
           {confirmingDelete ? (
             <div className="flex flex-wrap items-center gap-3">
               <p className="font-bold">

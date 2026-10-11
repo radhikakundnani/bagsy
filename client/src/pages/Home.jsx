@@ -45,7 +45,7 @@ export default function Home() {
 
       <section className="mx-auto mt-20 grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {FEATURES.map(({ title, icon, tint, text }) => (
-          <article key={title} className="lift flex flex-col gap-4 rounded-2xl border-2 border-ink bg-card p-6 shadow-pop">
+          <article key={title} className="lift flex flex-col gap-4 rounded-2xl border border-ink bg-card p-6 shadow-pop">
             <IconBadge icon={icon} tint={tint} />
             <h2 className="font-display text-2xl">{title}</h2>
             <p className="text-sm text-muted">{text}</p>

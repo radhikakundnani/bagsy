@@ -67,7 +67,7 @@ export default function Weather() {
             <IconBadge icon={weatherIcon(weather)} tint="bg-sky" size="lg" />
           </div>
           <p className="font-display mt-6 text-7xl">{Math.round(weather.temp)}°</p>
-          <dl className="mt-6 grid grid-cols-3 border-t-2 border-ink pt-4 text-center">
+          <dl className="mt-6 grid grid-cols-3 border-t border-ink pt-4 text-center">
             {stats.map(([label, value]) => (
               <div key={label}>
                 <dt className="eyebrow">{label}</dt>
