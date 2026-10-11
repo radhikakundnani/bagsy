@@ -1,4 +1,10 @@
 const mongoose = require('mongoose');
+const dns = require('dns');
+
+// Some home/mobile networks can't answer the special DNS lookup that
+// mongodb+srv:// links need (error: querySrv EBADRESP).
+// Ask Google and Cloudflare's public DNS servers instead.
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 const MAX_RETRIES = 5;
 const RETRY_DELAY_MS = 5000;
