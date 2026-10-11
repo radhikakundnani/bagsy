@@ -18,6 +18,23 @@ const packingItemSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  // Came from an AI suggestion the person chose to keep
+  isSuggested: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+// An AI suggestion waiting for the person to keep or dismiss it
+const suggestionSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  category: {
+    type: String,
+    enum: ['clothing', 'toiletries', 'electronics', 'documents', 'misc'],
+    default: 'misc',
+  },
+  reason: { type: String, default: '' },
+  status: { type: String, enum: ['new', 'kept', 'dismissed'], default: 'new' },
 });
 
 const packingListSchema = new mongoose.Schema({
@@ -32,6 +49,7 @@ const packingListSchema = new mongoose.Schema({
     required: true,
   },
   items: [packingItemSchema],
+  suggestions: [suggestionSchema],
   createdAt: {
     type: Date,
     default: Date.now,

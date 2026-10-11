@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Sparkles, User, UsersRound } from 'lucide-react';
 import Layout from '../components/Layout';
 import { Alert, Button, Card, Field, Title, inputClass } from '../components/ui';
-import { ACTIVITIES, TRIP_TYPES } from '../utils/tripMeta';
+import { ACTIVITIES, OCCASIONS, TRIP_TYPES } from '../utils/tripMeta';
+import PackingPrefsFields from '../components/PackingPrefsFields';
 import API from '../api/axios';
 
 const POPULAR_DESTINATIONS = [
@@ -12,7 +13,7 @@ const POPULAR_DESTINATIONS = [
   'Barcelona, Spain', 'Bangkok, Thailand', 'Toronto, Canada', 'Maldives',
 ];
 
-const STEPS = ['Where & when', 'Who & what kind', 'Plans'];
+const STEPS = ['Where & when', 'Who & what kind', 'Occasion', 'About you'];
 
 const MODES = [
   { value: 'solo', label: 'Just me', icon: User, blurb: 'One list, all yours.' },
@@ -27,11 +28,11 @@ function ChoiceTile({ selected, onClick, icon: Icon, label, blurb, tint }) {
       role="radio"
       aria-checked={selected}
       onClick={onClick}
-      className={`smooth flex items-start gap-4 rounded-xl border-2 border-ink p-4 text-left ${
+      className={`smooth flex items-start gap-4 rounded-xl border border-ink p-4 text-left ${
         selected ? `${tint} shadow-pop` : 'bg-card hover:bg-paper'
       }`}
     >
-      <span className={`smooth mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-ink ${selected ? 'bg-card' : 'bg-paper'}`}>
+      <span className={`smooth mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-ink ${selected ? 'bg-card' : 'bg-paper'}`}>
         <Icon size={20} strokeWidth={2} aria-hidden="true" />
       </span>
       <span className="min-w-0">
@@ -54,6 +55,23 @@ export default function CreateTrip() {
   const [mode, setMode] = useState('solo');
   const [tripType, setTripType] = useState('');
   const [activities, setActivities] = useState([]);
+  const [brief, setBrief] = useState('');
+  const [occasions, setOccasions] = useState([]);
+  const [prefs, setPrefs] = useState({ itemsFor: '', homeCountry: '', needs: [] });
+
+  // Prefill "About you" from last time
+  useEffect(() => {
+    API.get('/profile')
+      .then((res) => {
+        const saved = res.data.data.user.packingProfile || {};
+        setPrefs({ itemsFor: saved.itemsFor || '', homeCountry: saved.homeCountry || '', needs: saved.needs || [] });
+      })
+      .catch(() => {});
+  }, []);
+
+  const toggleOccasion = (value) => {
+    setOccasions((prev) => (prev.includes(value) ? prev.filter((o) => o !== value) : [...prev, value]));
+  };
 
   const isDateInvalid = startDate && endDate && new Date(endDate) <= new Date(startDate);
 
@@ -71,7 +89,17 @@ export default function CreateTrip() {
 
     setLoading(true);
     try {
-      const res = await API.post('/trips', { destination, startDate, endDate, activities, tripType: tripType || 'leisure', mode });
+      const res = await API.post('/trips', {
+        destination,
+        startDate,
+        endDate,
+        activities,
+        occasions,
+        tripType: tripType || 'leisure',
+        mode,
+        brief: brief.trim(),
+        packingProfile: { ...prefs, itemsFor: prefs.itemsFor || undefined },
+      });
       navigate(`/trips/${res.data.data.trip._id}`);
     } catch (err) {
       setError(err.response?.data?.message || "We couldn't create that trip. Please try again.");
@@ -92,7 +120,7 @@ export default function CreateTrip() {
             <li
               key={label}
               aria-current={state === 'current' ? 'step' : undefined}
-              className={`smooth inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 text-sm font-bold ${
+              className={`smooth inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-bold ${
                 state === 'current' ? 'border-ink bg-ink text-card' : state === 'done' ? 'border-ink bg-lime' : 'border-ink/30 text-muted'
               }`}
             >
@@ -187,37 +215,104 @@ export default function CreateTrip() {
           )}
 
           {step === 3 && (
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-8">
+              <fieldset>
+                <legend className="font-bold">What's the occasion?</legend>
+                <p className="text-sm text-muted">Pick any that fit. This changes the list the most.</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {OCCASIONS.map(({ value, label, icon: Icon }) => {
+                    const selected = occasions.includes(value);
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => toggleOccasion(value)}
+                        className={`smooth inline-flex items-center gap-1.5 rounded-full border border-ink px-3.5 py-1.5 text-sm font-bold ${
+                          selected ? 'bg-ink text-card' : 'bg-card hover:bg-sun'
+                        }`}
+                      >
+                        <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend className="font-bold">What will you get up to?</legend>
+                <p className="text-sm text-muted">Each one adds the right gear.</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {ACTIVITIES.map(({ value, label, icon: Icon }) => {
+                    const selected = activities.includes(value);
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => toggleActivity(value)}
+                        className={`smooth inline-flex items-center gap-1.5 rounded-full border border-ink px-3.5 py-1.5 text-sm font-bold ${
+                          selected ? 'bg-ink text-card' : 'bg-card hover:bg-sun'
+                        }`}
+                      >
+                        <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
+
               <div>
-                <h2 className="font-bold">What are you planning to do?</h2>
-                <p className="text-sm text-muted">Pick as many as you like. Each one adds the right gear.</p>
+                <Field
+                  label={
+                    <>
+                      Anything else? <span className="font-normal text-muted">(optional)</span>
+                    </>
+                  }
+                  htmlFor="ct-brief"
+                  hint="e.g. which events you're going to, or plans the options above don't cover."
+                >
+                  <textarea
+                    id="ct-brief"
+                    rows={2}
+                    maxLength={300}
+                    value={brief}
+                    onChange={(e) => setBrief(e.target.value)}
+                    placeholder="e.g. Cousin's wedding (sangeet + pheras), then 2 days trekking near Rishikesh"
+                    className={`${inputClass} resize-y`}
+                  />
+                </Field>
+                <p className="mt-2 flex items-center justify-between gap-3 text-xs text-muted">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Sparkles size={14} strokeWidth={2.2} aria-hidden="true" /> AI suggestions by Google Gemini. Don't include anything private.
+                  </span>
+                  <span className="tabular-nums">{brief.length}/300</span>
+                </p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {ACTIVITIES.map(({ value, label, icon: Icon }) => {
-                  const selected = activities.includes(value);
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      aria-pressed={selected}
-                      onClick={() => toggleActivity(value)}
-                      className={`smooth inline-flex items-center gap-1.5 rounded-full border-2 border-ink px-3.5 py-1.5 text-sm font-bold ${
-                        selected ? 'bg-ink text-card' : 'bg-card hover:bg-sun'
-                      }`}
-                    >
-                      <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="flex flex-wrap justify-between gap-3">
+
+              <div className="flex justify-between gap-3">
                 <Button variant="paper" onClick={() => setStep(2)}>
+                  <ArrowLeft size={16} strokeWidth={2.4} aria-hidden="true" /> Back
+                </Button>
+                <Button onClick={() => setStep(4)}>
+                  Next <ArrowRight size={16} strokeWidth={2.4} aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="flex flex-col gap-8">
+              <PackingPrefsFields value={prefs} onChange={setPrefs} />
+              <div className="flex flex-wrap justify-between gap-3">
+                <Button variant="paper" onClick={() => setStep(3)}>
                   <ArrowLeft size={16} strokeWidth={2.4} aria-hidden="true" /> Back
                 </Button>
                 <Button variant="tomato" size="lg" onClick={handleSubmit} disabled={loading}>
                   <Sparkles size={18} strokeWidth={2.2} aria-hidden="true" />
-                  {loading ? 'Checking the weather…' : 'Make my list'}
+                  {loading ? 'Making your list…' : 'Make my list'}
                 </Button>
               </div>
             </div>

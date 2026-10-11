@@ -18,16 +18,16 @@ export default function TripCard({ trip }) {
     <button
       type="button"
       onClick={() => navigate(`/trips/${trip._id}`)}
-      className="lift flex w-full flex-col overflow-hidden rounded-2xl border-2 border-ink bg-card text-left shadow-pop"
+      className="lift flex w-full flex-col overflow-hidden rounded-2xl border border-ink bg-card text-left shadow-pop"
     >
-      <span className={`h-2 w-full border-b-2 border-ink ${type.accent}`} aria-hidden="true" />
+      <span className={`h-2 w-full border-b border-ink ${type.accent}`} aria-hidden="true" />
       <span className="flex flex-col gap-4 p-6">
         <span className="flex items-center justify-between gap-3">
           <span className="eyebrow inline-flex items-center gap-1.5">
             <TypeIcon size={14} strokeWidth={2.2} aria-hidden="true" />
             {type.label}
             {trip.mode === 'group' && (
-              <span className="ml-1 inline-flex items-center gap-1 rounded-full border-2 border-ink px-1.5 py-px text-ink normal-case tracking-normal">
+              <span className="ml-1 inline-flex items-center gap-1 rounded-full border border-ink px-1.5 py-px text-ink normal-case tracking-normal">
                 <UsersRound size={12} strokeWidth={2.4} aria-hidden="true" />
                 {trip.memberCount}
               </span>

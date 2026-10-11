@@ -82,7 +82,7 @@ export default function Signup() {
             type="checkbox"
             checked={agreedTerms}
             onChange={(e) => setAgreedTerms(e.target.checked)}
-            className="h-5 w-5 rounded border-2 border-ink accent-ink"
+            className="h-5 w-5 rounded border border-ink accent-ink"
           />
           I agree to the terms and conditions
         </label>

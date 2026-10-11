@@ -1,5 +1,6 @@
 const PackingList = require('../models/PackingList');
 const User = require('../models/User');
+const Trip = require('../models/Trip');
 const { findTripForUser } = require('../utils/tripAccess');
 
 // GET /api/packing/:tripId            -> my list
@@ -30,9 +31,10 @@ const getPackingList = async (req, res, next) => {
       throw new Error('Packing list not found');
     }
 
+    const trip = await Trip.findById(req.params.tripId).select('brief');
     res.json({
       success: true,
-      data: { ...packingList.toObject(), ownerName, readOnly: Boolean(ownerName) },
+      data: { ...packingList.toObject(), brief: trip?.brief || '', ownerName, readOnly: Boolean(ownerName) },
     });
   } catch (error) {
     next(error);
@@ -139,4 +141,41 @@ const deleteItem = async (req, res, next) => {
   }
 };
 
-module.exports = { getPackingList, updateItem, addItem, deleteItem };
+// PUT /api/packing/:tripId/suggestions   body: { action: 'keep' | 'dismiss', ids: [...] | 'all' }
+// Keep moves AI suggestions into the list (marked as suggested); dismiss hides them.
+const resolveSuggestions = async (req, res, next) => {
+  try {
+    const { action, ids } = req.body;
+    if (!['keep', 'dismiss'].includes(action)) {
+      res.status(400);
+      throw new Error("action must be 'keep' or 'dismiss'");
+    }
+
+    const packingList = await PackingList.findOne({ tripId: req.params.tripId, userId: req.user._id });
+    if (!packingList) {
+      res.status(404);
+      throw new Error('Packing list not found');
+    }
+
+    const wanted = ids === 'all' ? null : new Set((Array.isArray(ids) ? ids : []).map(String));
+    const have = new Set(packingList.items.map((i) => i.name.toLowerCase()));
+
+    for (const sug of packingList.suggestions) {
+      if (sug.status !== 'new' || (wanted && !wanted.has(String(sug._id)))) continue;
+      sug.status = action === 'keep' ? 'kept' : 'dismissed';
+      if (action === 'keep' && !have.has(sug.name.toLowerCase())) {
+        packingList.items.push({ name: sug.name, category: sug.category, isSuggested: true });
+        have.add(sug.name.toLowerCase());
+      }
+    }
+
+    packingList.updatedAt = Date.now();
+    await packingList.save();
+    const trip = await Trip.findById(req.params.tripId).select('brief');
+    res.json({ success: true, data: { ...packingList.toObject(), brief: trip?.brief || '' } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { getPackingList, updateItem, addItem, deleteItem, resolveSuggestions };

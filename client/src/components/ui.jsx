@@ -19,14 +19,14 @@ export function Button({ variant = 'ink', size = 'md', className = '', type = 'b
   return (
     <button
       type={type}
-      className={`btn inline-flex items-center justify-center gap-2 rounded-full border-2 border-ink font-bold disabled:pointer-events-none disabled:opacity-50 ${BUTTON_VARIANTS[variant]} ${BUTTON_SIZES[size]} ${className}`}
+      className={`btn inline-flex items-center justify-center gap-2 rounded-full border border-ink font-bold disabled:pointer-events-none disabled:border-ink/30 disabled:bg-paper disabled:text-muted ${BUTTON_VARIANTS[variant]} ${BUTTON_SIZES[size]} ${className}`}
       {...props}
     />
   );
 }
 
 export const inputClass =
-  'smooth w-full rounded-xl border-2 border-ink bg-card px-4 py-3 text-ink placeholder:text-muted';
+  'smooth w-full rounded-xl border border-ink bg-card px-4 py-3 text-ink placeholder:text-muted';
 
 // A label + input wrapper
 export function Field({ label, htmlFor, hint, children }) {
@@ -92,7 +92,7 @@ export function IconBadge({ icon: Icon, tint = 'bg-card', size = 'md', className
   const sizes = { sm: 'h-8 w-8', md: 'h-10 w-10', lg: 'h-14 w-14' };
   const icons = { sm: 16, md: 20, lg: 26 };
   return (
-    <span className={`inline-flex shrink-0 items-center justify-center rounded-full border-2 border-ink ${tint} ${sizes[size]} ${className}`} aria-hidden="true">
+    <span className={`inline-flex shrink-0 items-center justify-center rounded-full border border-ink ${tint} ${sizes[size]} ${className}`} aria-hidden="true">
       <Icon size={icons[size]} strokeWidth={2} />
     </span>
   );
@@ -100,7 +100,7 @@ export function IconBadge({ icon: Icon, tint = 'bg-card', size = 'md', className
 
 // White card with an ink outline. Every card uses the same 24px padding.
 export function Card({ children, className = '', shadow = true, as: Tag = 'div' }) {
-  return <Tag className={`rounded-2xl border-2 border-ink bg-card p-6 ${shadow ? 'shadow-pop' : ''} ${className}`}>{children}</Tag>;
+  return <Tag className={`rounded-2xl border border-ink bg-card p-6 ${shadow ? 'shadow-pop' : ''} ${className}`}>{children}</Tag>;
 }
 
 // Progress bar: ink fill, turns green when everything's packed
@@ -108,7 +108,7 @@ export function ProgressBar({ packed = 0, total = 0, className = 'h-2.5', label 
   const pct = total > 0 ? Math.round((packed / total) * 100) : 0;
   return (
     <div
-      className={`overflow-hidden rounded-full border-2 border-ink bg-paper ${className}`}
+      className={`overflow-hidden rounded-full border border-ink bg-paper ${className}`}
       role="progressbar"
       aria-valuenow={pct}
       aria-valuemin={0}
@@ -123,7 +123,7 @@ export function ProgressBar({ packed = 0, total = 0, className = 'h-2.5', label 
 export function Alert({ children, tone = 'error' }) {
   const tones = { error: 'bg-peach', info: 'bg-sky', success: 'bg-lime' };
   return (
-    <div role={tone === 'error' ? 'alert' : 'status'} className={`rounded-xl border-2 border-ink px-4 py-3 text-sm font-medium ${tones[tone]}`}>
+    <div role={tone === 'error' ? 'alert' : 'status'} className={`rounded-xl border border-ink px-4 py-3 text-sm font-medium ${tones[tone]}`}>
       {children}
     </div>
   );
@@ -134,7 +134,7 @@ export function Spinner({ label = 'Loading' }) {
   return (
     <div className="flex items-center justify-center gap-2 py-20" role="status" aria-label={label}>
       {['bg-tomato', 'bg-sun-deep', 'bg-sky-deep'].map((c, i) => (
-        <span key={c} className={`h-3.5 w-3.5 animate-bounce rounded-full border-2 border-ink ${c}`} style={{ animationDelay: `${i * 0.15}s` }} />
+        <span key={c} className={`h-3.5 w-3.5 animate-bounce rounded-full border border-ink ${c}`} style={{ animationDelay: `${i * 0.15}s` }} />
       ))}
     </div>
   );
@@ -145,7 +145,7 @@ export function Toast({ toast }) {
   if (!toast) return null;
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex justify-center px-4 md:bottom-8" role="status">
-      <div className={`animate-pop-in rounded-full border-2 border-ink px-5 py-2.5 text-sm font-bold shadow-pop ${toast.type === 'error' ? 'bg-peach' : 'bg-lime'}`}>
+      <div className={`animate-pop-in rounded-full border border-ink px-5 py-2.5 text-sm font-bold shadow-pop ${toast.type === 'error' ? 'bg-peach' : 'bg-lime'}`}>
         {toast.message}
       </div>
     </div>

@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Trip = require('../models/Trip');
 const { myTripsFilter } = require('../utils/tripAccess');
+const { cleanPackingProfile } = require('./tripController');
 
 // GET /api/profile
 const getProfile = async (req, res, next) => {
@@ -41,6 +42,7 @@ const getProfile = async (req, res, next) => {
           name: user.name,
           email: user.email,
           createdAt: user.createdAt,
+          packingProfile: user.packingProfile || {},
         },
         stats: {
           totalTrips,
@@ -58,9 +60,9 @@ const getProfile = async (req, res, next) => {
 // PUT /api/profile
 const updateProfile = async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, packingProfile } = req.body;
 
-    if (!name || !name.trim()) {
+    if (name !== undefined && !String(name).trim()) {
       res.status(400);
       throw new Error('Name is required');
     }
@@ -71,7 +73,8 @@ const updateProfile = async (req, res, next) => {
       throw new Error('User not found');
     }
 
-    user.name = name.trim();
+    if (name !== undefined) user.name = String(name).trim();
+    if (packingProfile) user.packingProfile = cleanPackingProfile(packingProfile);
     await user.save();
 
     res.json({
@@ -81,6 +84,7 @@ const updateProfile = async (req, res, next) => {
         name: user.name,
         email: user.email,
         createdAt: user.createdAt,
+        packingProfile: user.packingProfile || {},
       },
     });
   } catch (error) {

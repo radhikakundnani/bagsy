@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import { ArrowRight, UsersRound } from 'lucide-react';
 import { Alert, Button, Card, Spinner, Title, Toast, inputClass } from '../components/ui';
 import { formatDate, tripTypeMeta } from '../utils/tripMeta';
+import PackingPrefsFields from '../components/PackingPrefsFields';
 import { weatherIcon } from '../utils/weatherLabels';
 import API from '../api/axios';
 
@@ -17,12 +18,16 @@ export default function Profile() {
   const [editName, setEditName] = useState('');
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
+  const [prefs, setPrefs] = useState({ itemsFor: '', homeCountry: '', needs: [] });
+  const [savingPrefs, setSavingPrefs] = useState(false);
 
   useEffect(() => {
     API.get('/profile')
       .then((res) => {
         setProfile(res.data.data);
         setEditName(res.data.data.user.name);
+        const saved = res.data.data.user.packingProfile || {};
+        setPrefs({ itemsFor: saved.itemsFor || '', homeCountry: saved.homeCountry || '', needs: saved.needs || [] });
       })
       .catch((err) => setError(err.response?.data?.message || "We couldn't load your profile."))
       .finally(() => setLoading(false));
@@ -46,6 +51,18 @@ export default function Profile() {
       showToast(err.response?.data?.message || "Couldn't save your name.", 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const savePrefs = async () => {
+    setSavingPrefs(true);
+    try {
+      await API.put('/profile', { packingProfile: { ...prefs, itemsFor: prefs.itemsFor || undefined } });
+      showToast('Packing preferences saved');
+    } catch (err) {
+      showToast(err.response?.data?.message || "Couldn't save your preferences.", 'error');
+    } finally {
+      setSavingPrefs(false);
     }
   };
 
@@ -76,7 +93,7 @@ export default function Profile() {
       {/* Name card */}
       <Card className="mt-10 flex flex-col gap-6 sm:flex-row sm:items-center">
         <span
-          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-tomato font-display text-3xl text-card"
+          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-ink bg-tomato font-display text-3xl text-card"
           aria-hidden="true"
         >
           {user.name.charAt(0).toUpperCase()}
@@ -109,7 +126,7 @@ export default function Profile() {
               <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="smooth rounded-full border-2 border-ink px-3 py-0.5 text-xs font-bold hover:bg-sun"
+                className="smooth rounded-full border border-ink px-3 py-0.5 text-xs font-bold hover:bg-sun"
               >
                 Edit
               </button>
@@ -127,17 +144,29 @@ export default function Profile() {
           ['Coming up', stats.upcomingTrips, 'bg-lime'],
           ['Done', stats.completedTrips, 'bg-lilac'],
         ].map(([label, value, tint]) => (
-          <div key={label} className={`rounded-2xl border-2 border-ink p-4 text-center sm:p-6 ${tint}`}>
+          <div key={label} className={`rounded-2xl border border-ink p-4 text-center sm:p-6 ${tint}`}>
             <p className="font-display text-4xl tabular-nums sm:text-5xl">{value}</p>
             <p className="eyebrow mt-2 text-ink">{label}</p>
           </div>
         ))}
       </div>
 
+      {/* Packing preferences */}
+      <h2 className="font-display mt-10 text-3xl">Packing preferences</h2>
+      <p className="mt-2 text-muted">Optional. Only used to tailor your lists, never shown to the people you travel with.</p>
+      <Card className="mt-6">
+        <PackingPrefsFields value={prefs} onChange={setPrefs} showNote={false} />
+        <div className="mt-8 flex justify-end">
+          <Button onClick={savePrefs} disabled={savingPrefs}>
+            {savingPrefs ? 'Saving…' : 'Save preferences'}
+          </Button>
+        </div>
+      </Card>
+
       {/* History */}
       <h2 className="font-display mt-10 text-3xl">Every trip so far</h2>
       {tripHistory.length === 0 ? (
-        <div className="mt-6 rounded-2xl border-2 border-dashed border-ink bg-card p-6 text-center">
+        <div className="mt-6 rounded-2xl border border-dashed border-ink bg-card p-6 text-center">
           <p className="text-muted">No trips yet.</p>
           <Button variant="ink" className="mt-4" onClick={() => navigate('/create-trip')}>
             Plan your first one
@@ -156,9 +185,9 @@ export default function Profile() {
                 <button
                   type="button"
                   onClick={() => navigate(`/trips/${trip._id}`)}
-                  className="lift flex w-full items-center gap-4 rounded-2xl border-2 border-ink bg-card p-4 text-left"
+                  className="lift flex w-full items-center gap-4 rounded-2xl border border-ink bg-card p-4 text-left"
                 >
-                  <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-ink ${type.tint}`} aria-hidden="true">
+                  <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-ink ${type.tint}`} aria-hidden="true">
                     <WIcon size={20} strokeWidth={2.2} />
                   </span>
                   <span className="min-w-0 flex-1">
@@ -171,7 +200,7 @@ export default function Profile() {
                     </span>
                   </span>
                   {status && (
-                    <span className={`hidden shrink-0 rounded-full border-2 border-ink px-2.5 py-0.5 text-xs font-bold sm:inline ${status.style}`}>
+                    <span className={`hidden shrink-0 rounded-full border border-ink px-2.5 py-0.5 text-xs font-bold sm:inline ${status.style}`}>
                       {status.label}
                     </span>
                   )}
