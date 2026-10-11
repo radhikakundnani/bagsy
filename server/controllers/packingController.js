@@ -1,11 +1,28 @@
 const PackingList = require('../models/PackingList');
+const User = require('../models/User');
+const { findTripForUser } = require('../utils/tripAccess');
 
-// GET /api/packing/:tripId
+// GET /api/packing/:tripId            -> my list
+// GET /api/packing/:tripId?member=<id> -> a group member's list (trip admin only, read-only)
 const getPackingList = async (req, res, next) => {
   try {
+    const { member } = req.query;
+    let ownerId = req.user._id;
+    let ownerName = null;
+
+    if (member && member !== String(req.user._id)) {
+      const found = await findTripForUser(req.params.tripId, req.user._id);
+      if (!found || found.role !== 'admin') {
+        res.status(403);
+        throw new Error("Only the trip admin can see other people's lists.");
+      }
+      ownerId = member;
+      ownerName = (await User.findById(member).select('name'))?.name || null;
+    }
+
     const packingList = await PackingList.findOne({
       tripId: req.params.tripId,
-      userId: req.user._id,
+      userId: ownerId,
     });
 
     if (!packingList) {
@@ -13,7 +30,10 @@ const getPackingList = async (req, res, next) => {
       throw new Error('Packing list not found');
     }
 
-    res.json({ success: true, data: packingList });
+    res.json({
+      success: true,
+      data: { ...packingList.toObject(), ownerName, readOnly: Boolean(ownerName) },
+    });
   } catch (error) {
     next(error);
   }

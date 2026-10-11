@@ -1,42 +1,39 @@
-import { weatherEmoji, weatherSourceLabel } from '../utils/weatherLabels';
+import { Card, IconBadge } from './ui';
+import { weatherIcon, weatherSourceLabel } from '../utils/weatherLabels';
 
 export default function WeatherCard({ weather }) {
   if (!weather) {
     return (
-      <div className="bg-white rounded-xl p-5 border border-beige-dark/50">
-        <p className="text-brown/50 text-sm">Weather data unavailable</p>
-      </div>
+      <Card shadow={false}>
+        <p className="eyebrow">Weather</p>
+        <p className="mt-3 text-sm text-muted">We couldn't get weather for this trip.</p>
+      </Card>
     );
   }
 
+  const stats = [
+    ['Low', weather.tempMin != null ? `${Math.round(weather.tempMin)}°` : '—'],
+    ['High', weather.tempMax != null ? `${Math.round(weather.tempMax)}°` : '—'],
+    ['Humidity', weather.humidity != null ? `${weather.humidity}%` : '—'],
+  ];
+
   return (
-    <div className="bg-white rounded-xl p-5 border border-beige-dark/50">
-      <h3 className="text-xs font-semibold text-brown/50 uppercase tracking-wider mb-3">
-        {weatherSourceLabel(weather)}
-      </h3>
-      <div className="flex items-center gap-4">
-        <span className="text-4xl">{weatherEmoji(weather)}</span>
-        <div>
-          <p className="text-3xl font-bold text-brown">
-            {weather.temp != null ? `${Math.round(weather.temp)}°C` : 'N/A'}
-          </p>
-          <p className="text-brown/60 text-sm first-letter:uppercase">{weather.description || 'Unknown'}</p>
-          {weather.tempMin != null && weather.tempMax != null && (
-            <p className="text-brown/50 text-xs mt-0.5">
-              Low {Math.round(weather.tempMin)}°C · High {Math.round(weather.tempMax)}°C
-            </p>
-          )}
-        </div>
+    <Card shadow={false}>
+      <div className="flex items-start justify-between gap-3">
+        <p className="eyebrow">{weatherSourceLabel(weather)}</p>
+        <IconBadge icon={weatherIcon(weather)} tint="bg-sky" />
       </div>
-      {weather.note && <p className="text-brown/50 text-xs mt-3">{weather.note}</p>}
-      {weather.humidity != null && (
-        <div className="mt-3 pt-3 border-t border-beige-dark/30">
-          <div className="flex items-center gap-2 text-sm text-brown/60">
-            <span>💧</span>
-            <span>Humidity: {weather.humidity}%</span>
+      <p className="font-display text-5xl">{weather.temp != null ? `${Math.round(weather.temp)}°` : '—'}</p>
+      <p className="mt-1 font-medium first-letter:uppercase">{weather.description || 'Unknown'}</p>
+      <dl className="mt-6 grid grid-cols-3 border-t-2 border-ink pt-4 text-center">
+        {stats.map(([label, value]) => (
+          <div key={label}>
+            <dt className="eyebrow">{label}</dt>
+            <dd className="font-display mt-1 text-xl tabular-nums">{value}</dd>
           </div>
-        </div>
-      )}
-    </div>
+        ))}
+      </dl>
+      {weather.note && <p className="mt-4 text-xs text-muted">{weather.note}</p>}
+    </Card>
   );
 }

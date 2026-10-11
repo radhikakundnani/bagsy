@@ -1,44 +1,57 @@
 import { useNavigate } from 'react-router-dom';
+import { Bell, CloudSun, ListChecks, UsersRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
+import { Button, IconBadge, Squiggle } from '../components/ui';
 
-const BG_IMAGE = '/hero-bg.png';
+const FEATURES = [
+  { title: 'Weather', icon: CloudSun, tint: 'bg-sky', text: 'Forecast for your exact dates, or typical weather for trips months away.' },
+  { title: 'Your list', icon: ListChecks, tint: 'bg-sun', text: 'Grouped and filterable, so you can review everything in a minute.' },
+  { title: 'Pack together', icon: UsersRound, tint: 'bg-lilac', text: 'Invite your crew with a link. Everyone gets a list, the admin sees them all.' },
+  { title: 'Reminders', icon: Bell, tint: 'bg-lime', text: 'A nudge 3 days before you leave, with what’s still unpacked.' },
+];
 
 export default function Home() {
   const navigate = useNavigate();
   const { token } = useAuth();
 
-  const handleCTA = () => {
-    navigate(token ? '/create-trip' : '/signup');
-  };
-
   return (
-    <Layout bgClass="bg-brown">
-      <div
-        className="relative min-h-screen bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${BG_IMAGE})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-brown/60 via-brown/30 to-transparent" />
-
-        <div className="relative z-10 flex flex-col justify-center min-h-screen px-12 md:px-20 max-w-2xl">
-          <h2 className="font-sans font-medium text-5xl md:text-6xl leading-[56px] text-brown mb-6">
-            Pack smart.
-            <br />
-            Travel light.
-          </h2>
-          <p className="text-beige/80 text-base md:text-lg font-light leading-[18px] mb-8 max-w-md">
-            Custom travel packing lists based on your destination, dates, weather, and plans.
-            <br />
-            No more overpacking or forgetting the essentials.
-          </p>
-          <button
-            onClick={handleCTA}
-            className="self-start px-8 py-3 bg-brown text-beige rounded-full text-sm font-medium hover:bg-brown-dark transition-colors"
-          >
-            Generate My Packing List
-          </button>
+    <Layout wide>
+      <section className="mx-auto max-w-3xl pt-6 text-center md:pt-10">
+        <p className="eyebrow">Packing lists that check the weather for you</p>
+        <h1 className="font-display mt-4 text-5xl sm:text-7xl">
+          Pack once.
+          <br />
+          <span className="relative inline-block">
+            <span className="font-accent">forget nothing.</span>
+            <Squiggle className="absolute -bottom-2 left-0 w-full text-tomato" />
+          </span>
+        </h1>
+        <p className="mx-auto mt-8 max-w-xl text-lg text-muted">
+          Tell Bagsy where you're going, when, and what you'll get up to. It builds your packing list from the weather on
+          those dates, for you or your whole group.
+        </p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Button variant="tomato" size="lg" onClick={() => navigate(token ? '/create-trip' : '/signup')}>
+            Make my packing list
+          </Button>
+          {!token && (
+            <Button variant="paper" size="lg" onClick={() => navigate('/login')}>
+              I have an account
+            </Button>
+          )}
         </div>
-      </div>
+      </section>
+
+      <section className="mx-auto mt-20 grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {FEATURES.map(({ title, icon, tint, text }) => (
+          <article key={title} className="lift flex flex-col gap-4 rounded-2xl border-2 border-ink bg-card p-6 shadow-pop">
+            <IconBadge icon={icon} tint={tint} />
+            <h2 className="font-display text-2xl">{title}</h2>
+            <p className="text-sm text-muted">{text}</p>
+          </article>
+        ))}
+      </section>
     </Layout>
   );
 }
