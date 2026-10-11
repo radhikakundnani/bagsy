@@ -1,19 +1,22 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Spinner } from './ui';
 
 export default function ProtectedRoute({ children }) {
   const { token, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-beige">
-        <div className="w-10 h-10 border-4 border-orange border-t-transparent rounded-full animate-spin" />
+      <div className="flex min-h-screen items-center justify-center bg-paper">
+        <Spinner />
       </div>
     );
   }
 
   if (!token) {
-    return <Navigate to="/login" replace />;
+    // Remember where they were going (e.g. an invite link) so we can send them back after logging in
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
   return children;

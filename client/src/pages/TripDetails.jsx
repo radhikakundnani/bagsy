@@ -1,17 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Layout from '../components/Layout';
 import WeatherCard from '../components/WeatherCard';
+import CrewPanel from '../components/CrewPanel';
+import { Alert, Button, Card, ProgressBar, Spinner, Toast } from '../components/ui';
+import { activityMeta, formatDate, tripLength, tripTypeMeta } from '../utils/tripMeta';
 import API from '../api/axios';
-
-function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
 
 export default function TripDetails() {
   const { id } = useParams();
@@ -20,128 +15,146 @@ export default function TripDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     API.get(`/trips/${id}`)
       .then((res) => setTrip(res.data.data))
-      .catch((err) => setError(err.response?.data?.message || 'Failed to load trip'))
+      .catch((err) => setError(err.response?.data?.message || "We couldn't load this trip."))
       .finally(() => setLoading(false));
   }, [id]);
 
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 2500);
+  };
+
   const handleDelete = async () => {
-    if (!window.confirm('Delete this trip and its packing list?')) return;
     setDeleting(true);
     try {
       await API.delete(`/trips/${id}`);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete trip');
+      setError(err.response?.data?.message || "We couldn't delete this trip.");
       setDeleting(false);
+      setConfirmingDelete(false);
     }
   };
 
   if (loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center py-20">
-          <div className="w-10 h-10 border-4 border-orange border-t-transparent rounded-full animate-spin" />
-        </div>
+        <Spinner label="Loading trip" />
       </Layout>
     );
   }
 
-  if (error) {
+  if (error && !trip) {
     return (
       <Layout>
-        <div className="p-8 md:p-12">
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-            {error}
-          </div>
-        </div>
+        <Alert>{error}</Alert>
       </Layout>
     );
   }
 
-  const duration = Math.ceil(
-    (new Date(trip.endDate) - new Date(trip.startDate)) / (1000 * 60 * 60 * 24)
-  );
+  const type = tripTypeMeta(trip.tripType);
+  const TypeIcon = type.icon;
+  const days = tripLength(trip.startDate, trip.endDate);
+  const { packed = 0, total = 0 } = trip.progress || {};
+  const isAdmin = trip.myRole === 'admin';
 
   return (
     <Layout>
-      <div className="p-8 md:p-12 max-w-4xl">
-        {/* Back button */}
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-2 text-brown/60 text-sm hover:text-brown mb-6 transition-colors"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          Back to trips
-        </button>
+      <Toast toast={toast} />
+      <Link to="/dashboard" className="smooth inline-flex items-center gap-1 text-sm font-bold underline decoration-2 underline-offset-4 hover:text-tomato">
+        <ArrowLeft size={16} strokeWidth={2.4} aria-hidden="true" /> All trips
+      </Link>
 
-        {/* Header */}
-        <div className="flex items-start justify-between mb-8">
-          <div>
-            <h1 className="font-serif text-3xl md:text-4xl text-brown font-semibold mb-2">
-              {trip.destination}
-            </h1>
-            <p className="text-brown/60 text-sm">
-              {formatDate(trip.startDate)} – {formatDate(trip.endDate)} &middot; {duration} days
-            </p>
-          </div>
-          <span className="inline-block px-4 py-1.5 bg-orange/10 text-orange text-sm font-medium rounded-full capitalize">
-            {trip.tripType || 'leisure'}
-          </span>
+      <header className="mt-6">
+        <p className="eyebrow flex items-center gap-1.5">
+          <TypeIcon size={14} strokeWidth={2.2} aria-hidden="true" />
+          {type.label} trip{trip.mode === 'group' ? ' · group' : ''}
+        </p>
+        <h1 className="font-display mt-2 break-words text-5xl sm:text-6xl">{trip.destination}</h1>
+        <p className="mt-3 text-lg text-muted">
+          {formatDate(trip.startDate, { weekday: 'short', day: 'numeric', month: 'long' })} –{' '}
+          {formatDate(trip.endDate, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })} · {days}{' '}
+          {days === 1 ? 'day' : 'days'}
+        </p>
+      </header>
+
+      {error && (
+        <div className="mt-6">
+          <Alert>{error}</Alert>
         </div>
+      )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/* Weather */}
-          <WeatherCard weather={trip.weather} />
-
-          {/* Activities */}
-          <div className="bg-white rounded-xl p-5 border border-beige-dark/50">
-            <h3 className="text-xs font-semibold text-brown/50 uppercase tracking-wider mb-3">
-              Planned Activities
-            </h3>
-            {trip.activities?.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {trip.activities.map((act) => (
-                  <span
-                    key={act}
-                    className="px-3 py-1.5 bg-beige text-brown text-sm rounded-full capitalize"
-                  >
-                    {act}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-brown/50 text-sm">No activities specified</p>
-            )}
-          </div>
+      {/* The list comes first */}
+      <Card className="mt-10 flex flex-col items-start gap-6 sm:flex-row sm:items-center">
+        <div className="w-full flex-1">
+          <p className="eyebrow">Your packing list</p>
+          <p className="font-display mt-2 text-3xl">
+            {total && packed === total ? 'All packed' : `${packed} of ${total} packed`}
+          </p>
+          <ProgressBar packed={packed} total={total} className="mt-3 h-3" />
         </div>
+        <Button variant="tomato" onClick={() => navigate(`/trips/${id}/packing`)}>
+          Review list <ArrowRight size={16} strokeWidth={2.4} aria-hidden="true" />
+        </Button>
+      </Card>
 
-        {/* Actions */}
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => navigate(`/trips/${id}/packing`)}
-            className="px-8 py-3 bg-brown text-beige rounded-full text-sm font-medium hover:bg-brown-dark transition-colors flex items-center gap-2"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 11l3 3L22 4" />
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-            </svg>
-            View Packing List
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="px-6 py-3 border border-red-300 text-red-600 rounded-full text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
-          >
-            {deleting ? 'Deleting...' : 'Delete Trip'}
-          </button>
-        </div>
+      <div className="mt-6">
+        <CrewPanel trip={trip} onTripChange={setTrip} showToast={showToast} />
       </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+        <WeatherCard weather={trip.weather} />
+        <Card shadow={false}>
+          <p className="eyebrow">Plans</p>
+          {trip.activities?.length > 0 ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {trip.activities.map((value) => {
+                const { label, icon: Icon } = activityMeta(value);
+                return (
+                  <span key={value} className="inline-flex items-center gap-1.5 rounded-full border-2 border-ink px-3 py-1 text-sm font-bold">
+                    <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
+                    {label}
+                  </span>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-muted">No activities picked.</p>
+          )}
+        </Card>
+      </div>
+
+      {isAdmin && (
+        <div className="mt-10 border-t-2 border-ink/20 pt-6">
+          {confirmingDelete ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="font-bold">
+                Delete this trip{trip.mode === 'group' ? ' and everyone’s lists' : ' and its packing list'} for good?
+              </p>
+              <Button variant="tomato" size="sm" onClick={handleDelete} disabled={deleting}>
+                {deleting ? 'Deleting…' : 'Yes, delete'}
+              </Button>
+              <Button variant="paper" size="sm" onClick={() => setConfirmingDelete(false)}>
+                Keep it
+              </Button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmingDelete(true)}
+              className="smooth text-sm font-bold text-muted underline decoration-2 underline-offset-4 hover:text-tomato"
+            >
+              Delete trip
+            </button>
+          )}
+        </div>
+      )}
     </Layout>
   );
 }

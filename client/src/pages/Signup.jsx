@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { isStrongPassword } from '../utils/passwordRules';
+import AuthShell from '../components/AuthShell';
 import PasswordChecklist from '../components/PasswordChecklist';
-
-const BG_IMAGE = '/hero-bg.png';
+import { Alert, Button, Field, PasswordInput, inputClass } from '../components/ui';
+import { isStrongPassword } from '../utils/passwordRules';
 
 export default function Signup() {
   const [firstName, setFirstName] = useState('');
@@ -17,22 +17,23 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const { signup } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const goTo = location.state?.from || '/dashboard';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("The two passwords don't match.");
       return;
     }
-
     if (!isStrongPassword(password)) {
-      setError("Your password doesn't meet all the rules below yet.");
+      setError("Your password doesn't meet all the rules yet.");
       return;
     }
     if (!agreedTerms) {
-      setError('Please agree to the terms and conditions');
+      setError('Please agree to the terms to continue.');
       return;
     }
 
@@ -40,127 +41,63 @@ export default function Signup() {
     try {
       const name = `${firstName} ${lastName}`.trim();
       await signup(name, email, password);
-      navigate('/dashboard');
+      navigate(goTo, { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || 'Signup failed. Please try again.');
+      setError(err.response?.data?.message || 'Sign up failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen">
-      {/* Left panel - form */}
-      <div className="w-full lg:w-1/3 relative flex flex-col">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${BG_IMAGE})` }}
-        />
-        <div className="absolute inset-0 bg-brown/85" />
+    <AuthShell title="Start" accent="packing" intro="Make an account and your first list is two minutes away.">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {error && <Alert>{error}</Alert>}
 
-        <div className="relative z-10 flex flex-col flex-1 px-10 md:px-16 lg:px-20 py-8">
-          {/* Logo */}
-          <div className="flex items-center gap-2 mb-10">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFF2DA" strokeWidth="1.5">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-            </svg>
-            <span className="text-beige text-sm font-medium">Bagsy</span>
-          </div>
-
-          {/* Title */}
-          <h1 className="font-serif text-4xl md:text-5xl text-white mb-8 underline underline-offset-8 decoration-1">
-            Sign up
-          </h1>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-sm">
-            {error && (
-              <div className="bg-red-500/20 border border-red-400/50 text-red-200 px-4 py-2 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-
-            <input
-              type="text"
-              placeholder="Enter First Name"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg bg-transparent border border-beige/40 text-beige placeholder-beige/50 focus:outline-none focus:border-beige transition-colors"
-            />
-
-            <input
-              type="text"
-              placeholder="Enter Last Name"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg bg-transparent border border-beige/40 text-beige placeholder-beige/50 focus:outline-none focus:border-beige transition-colors"
-            />
-
-            <input
-              type="email"
-              placeholder="Enter Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg bg-transparent border border-beige/40 text-beige placeholder-beige/50 focus:outline-none focus:border-beige transition-colors"
-            />
-
-            <input
-              type="password"
-              placeholder="Enter Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg bg-transparent border border-beige/40 text-beige placeholder-beige/50 focus:outline-none focus:border-beige transition-colors"
-            />
-
-            {password && <PasswordChecklist password={password} />}
-
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg bg-transparent border border-beige/40 text-beige placeholder-beige/50 focus:outline-none focus:border-beige transition-colors"
-            />
-
-            <label className="flex items-center gap-2 text-beige/70 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={agreedTerms}
-                onChange={(e) => setAgreedTerms(e.target.checked)}
-                className="w-4 h-4 rounded border-beige/40 accent-orange"
-              />
-              I agree to all terms and conditions.
-            </label>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-white text-brown font-semibold rounded-full hover:bg-beige transition-colors disabled:opacity-50 mt-1"
-            >
-              {loading ? 'Creating account...' : 'Sign Up'}
-            </button>
-
-            <p className="text-beige/70 text-sm text-center mt-4">
-              Already have an account?{' '}
-              <Link to="/login" className="text-white font-bold hover:underline">
-                LOGIN
-              </Link>
-            </p>
-          </form>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label="First name" htmlFor="su-first">
+            <input id="su-first" autoComplete="given-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className={inputClass} />
+          </Field>
+          <Field label="Last name" htmlFor="su-last">
+            <input id="su-last" autoComplete="family-name" value={lastName} onChange={(e) => setLastName(e.target.value)} required className={inputClass} />
+          </Field>
         </div>
-      </div>
 
-      {/* Right panel - image */}
-      <div
-        className="hidden lg:block lg:w-2/3 bg-cover bg-center"
-        style={{ backgroundImage: `url(${BG_IMAGE})` }}
-      />
-    </div>
+        <Field label="Email" htmlFor="su-email">
+          <input id="su-email" type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClass} />
+        </Field>
+
+        <Field label="Password" htmlFor="su-password">
+          <PasswordInput id="su-password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        </Field>
+        {password && <PasswordChecklist password={password} />}
+
+        <Field label="Confirm password" htmlFor="su-confirm">
+          <PasswordInput id="su-confirm" autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+        </Field>
+
+        <label htmlFor="su-terms" className="flex cursor-pointer items-center gap-3 text-sm">
+          <input
+            id="su-terms"
+            type="checkbox"
+            checked={agreedTerms}
+            onChange={(e) => setAgreedTerms(e.target.checked)}
+            className="h-5 w-5 rounded border-2 border-ink accent-ink"
+          />
+          I agree to the terms and conditions
+        </label>
+
+        <Button type="submit" variant="ink" size="lg" disabled={loading} className="mt-2 w-full">
+          {loading ? 'Creating your account…' : 'Sign up'}
+        </Button>
+
+        <p className="text-center text-sm text-muted">
+          Already have an account?{' '}
+          <Link to="/login" state={location.state} className="font-bold text-ink underline decoration-2 underline-offset-4 hover:text-tomato smooth">
+            Log in
+          </Link>
+        </p>
+      </form>
+    </AuthShell>
   );
 }

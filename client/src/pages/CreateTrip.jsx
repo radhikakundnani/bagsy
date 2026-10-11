@@ -1,40 +1,46 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, Check, Sparkles, User, UsersRound } from 'lucide-react';
 import Layout from '../components/Layout';
+import { Alert, Button, Card, Field, Title, inputClass } from '../components/ui';
+import { ACTIVITIES, TRIP_TYPES } from '../utils/tripMeta';
 import API from '../api/axios';
 
-const TRIP_TYPES = ['leisure', 'business', 'adventure', 'family'];
-
-const ACTIVITIES = [
-  'sightseeing',
-  'hiking',
-  'swimming',
-  'dining',
-  'shopping',
-  'camping',
-  'skiing',
-  'beach',
-  'photography',
-  'nightlife',
-];
-
 const POPULAR_DESTINATIONS = [
-  'Paris, France',
-  'London, UK',
-  'New York City, USA',
-  'Tokyo, Japan',
-  'Rome, Italy',
-  'Sydney, Australia',
-  'Dubai, UAE',
-  'Bali, Indonesia',
-  'Barcelona, Spain',
-  'Istanbul, Turkey',
-  'Bangkok, Thailand',
-  'Kyoto, Japan',
-  'Cape Town, South Africa',
-  'Hawaii, USA',
-  'Maldives',
+  'Goa, India', 'Mumbai, India', 'Jaipur, India', 'Manali, India', 'Paris, France', 'London, UK',
+  'New York City, USA', 'Tokyo, Japan', 'Rome, Italy', 'Dubai, UAE', 'Bali, Indonesia',
+  'Barcelona, Spain', 'Bangkok, Thailand', 'Toronto, Canada', 'Maldives',
 ];
+
+const STEPS = ['Where & when', 'Who & what kind', 'Plans'];
+
+const MODES = [
+  { value: 'solo', label: 'Just me', icon: User, blurb: 'One list, all yours.' },
+  { value: 'group', label: 'With others', icon: UsersRound, blurb: 'Invite family or friends with a link. Everyone gets their own list and you can check them.' },
+];
+
+// One selectable tile, used for "who" and "trip type"
+function ChoiceTile({ selected, onClick, icon: Icon, label, blurb, tint }) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={onClick}
+      className={`smooth flex items-start gap-4 rounded-xl border-2 border-ink p-4 text-left ${
+        selected ? `${tint} shadow-pop` : 'bg-card hover:bg-paper'
+      }`}
+    >
+      <span className={`smooth mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-ink ${selected ? 'bg-card' : 'bg-paper'}`}>
+        <Icon size={20} strokeWidth={2} aria-hidden="true" />
+      </span>
+      <span className="min-w-0">
+        <span className="block font-bold">{label}</span>
+        <span className="block text-sm text-muted">{blurb}</span>
+      </span>
+    </button>
+  );
+}
 
 export default function CreateTrip() {
   const navigate = useNavigate();
@@ -45,39 +51,30 @@ export default function CreateTrip() {
   const [destination, setDestination] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [mode, setMode] = useState('solo');
   const [tripType, setTripType] = useState('');
   const [activities, setActivities] = useState([]);
 
-  const totalSteps = 3;
-  const progress = (step / totalSteps) * 100;
+  const isDateInvalid = startDate && endDate && new Date(endDate) <= new Date(startDate);
 
-  const isDateInvalid = startDate && endDate && new Date(endDate) < new Date(startDate);
-
-  const toggleActivity = (act) => {
-    setActivities((prev) =>
-      prev.includes(act) ? prev.filter((a) => a !== act) : [...prev, act]
-    );
+  const toggleActivity = (value) => {
+    setActivities((prev) => (prev.includes(value) ? prev.filter((a) => a !== value) : [...prev, value]));
   };
 
   const handleSubmit = async () => {
     setError('');
     if (!destination || !startDate || !endDate) {
-      setError('Please fill in destination and dates');
+      setError('Add a destination and both dates first.');
+      setStep(1);
       return;
     }
 
     setLoading(true);
     try {
-      const res = await API.post('/trips', {
-        destination,
-        startDate,
-        endDate,
-        activities,
-        tripType: tripType || 'leisure',
-      });
+      const res = await API.post('/trips', { destination, startDate, endDate, activities, tripType: tripType || 'leisure', mode });
       navigate(`/trips/${res.data.data.trip._id}`);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create trip');
+      setError(err.response?.data?.message || "We couldn't create that trip. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -85,186 +82,148 @@ export default function CreateTrip() {
 
   return (
     <Layout>
-      <div className="p-8 md:p-12 max-w-3xl">
-        <h1 className="font-serif text-3xl md:text-4xl text-brown font-semibold mb-4">
-          Create New List
-        </h1>
+      <Title accent="trip">New</Title>
 
-        {/* Progress bar */}
-        <div className="relative mb-10">
-          <div className="h-1 bg-brown/10 rounded-full">
-            <div
-              className="h-1 bg-darkblue rounded-full transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <div
-            className="absolute top-1/2 -translate-y-1/2 transition-all duration-500 text-orange"
-            style={{ left: `${progress}%`, transform: `translateX(-50%) translateY(-50%)` }}
-          >
-            ✈️
-          </div>
-        </div>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
-            {error}
-          </div>
-        )}
-
-        {/* Step 1: Destination & Dates */}
-        {step === 1 && (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-xs font-semibold text-brown/70 uppercase tracking-wider mb-2">
-                Where is your vacation destination?
-              </label>
-              <input
-                type="text"
-                list="destinations"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                placeholder="e.g. Paris, France"
-                className="w-full px-4 py-3 rounded-lg border border-brown/20 bg-white text-brown placeholder-brown/40 focus:outline-none focus:border-orange transition-colors"
-              />
-              <datalist id="destinations">
-                {POPULAR_DESTINATIONS.map(city => <option key={city} value={city} />)}
-              </datalist>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-brown/70 uppercase tracking-wider mb-2">
-                  Start date
-                </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-brown/20 bg-white text-brown focus:outline-none focus:border-orange transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-brown/70 uppercase tracking-wider mb-2">
-                  End date
-                </label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className={`w-full px-4 py-3 rounded-lg border bg-white transition-colors focus:outline-none ${
-                    isDateInvalid
-                      ? 'border-red-500 text-red-700 focus:border-red-500'
-                      : 'border-brown/20 text-brown focus:border-orange'
-                  }`}
-                />
-                {isDateInvalid && (
-                  <p className="text-red-500 text-xs mt-1 font-medium">End date cannot be before start date.</p>
-                )}
-              </div>
-            </div>
-
-            <button
-              onClick={() => setStep(2)}
-              disabled={!destination || !startDate || !endDate || isDateInvalid}
-              className="px-8 py-3 bg-brown text-beige rounded-full text-sm font-medium hover:bg-brown-dark transition-colors disabled:opacity-40 mt-4"
+      <ol className="mt-6 flex flex-wrap gap-2" aria-label="Progress">
+        {STEPS.map((label, i) => {
+          const n = i + 1;
+          const state = n < step ? 'done' : n === step ? 'current' : 'todo';
+          return (
+            <li
+              key={label}
+              aria-current={state === 'current' ? 'step' : undefined}
+              className={`smooth inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 text-sm font-bold ${
+                state === 'current' ? 'border-ink bg-ink text-card' : state === 'done' ? 'border-ink bg-lime' : 'border-ink/30 text-muted'
+              }`}
             >
-              Next
-            </button>
-          </div>
-        )}
+              {state === 'done' ? <Check size={14} strokeWidth={3} aria-hidden="true" /> : <span aria-hidden="true">{n}</span>}
+              {label}
+            </li>
+          );
+        })}
+      </ol>
 
-        {/* Step 2: Trip Type */}
-        {step === 2 && (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-xs font-semibold text-brown/70 uppercase tracking-wider mb-3">
-                What type of trip is this?
-              </label>
-              <div className="space-y-2">
-                {TRIP_TYPES.map((type) => (
-                  <label
-                    key={type}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-colors ${
-                      tripType === type
-                        ? 'border-orange bg-orange/5'
-                        : 'border-brown/20 bg-white hover:border-brown/40'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="tripType"
-                      value={type}
-                      checked={tripType === type}
-                      onChange={() => setTripType(type)}
-                      className="w-4 h-4 accent-orange"
-                    />
-                    <span className="text-brown capitalize font-medium">{type}</span>
-                  </label>
-                ))}
+      {error && (
+        <div className="mt-6">
+          <Alert>{error}</Alert>
+        </div>
+      )}
+
+      <Card className="mt-10 sm:p-8" key={step}>
+        <div className="animate-page-in">
+          {step === 1 && (
+            <div className="flex flex-col gap-6">
+              <Field label="Destination" htmlFor="ct-dest" hint="City name works best, e.g. “Goa, India”.">
+                <input
+                  id="ct-dest"
+                  type="text"
+                  list="destinations"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  placeholder="Where are you headed?"
+                  className={`${inputClass} text-lg`}
+                />
+                <datalist id="destinations">
+                  {POPULAR_DESTINATIONS.map((city) => (
+                    <option key={city} value={city} />
+                  ))}
+                </datalist>
+              </Field>
+
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <Field label="Leaving" htmlFor="ct-start">
+                  <input id="ct-start" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
+                </Field>
+                <Field label="Coming back" htmlFor="ct-end">
+                  <input
+                    id="ct-end"
+                    type="date"
+                    min={startDate || undefined}
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className={`${inputClass} ${isDateInvalid ? 'bg-peach' : ''}`}
+                  />
+                </Field>
+              </div>
+              {isDateInvalid && <p className="-mt-3 text-sm font-bold text-tomato">You need to come back after you leave.</p>}
+
+              <div className="flex justify-end">
+                <Button onClick={() => setStep(2)} disabled={!destination || !startDate || !endDate || isDateInvalid}>
+                  Next <ArrowRight size={16} strokeWidth={2.4} aria-hidden="true" />
+                </Button>
               </div>
             </div>
+          )}
 
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={() => setStep(1)}
-                className="px-8 py-3 border border-brown/30 text-brown rounded-full text-sm font-medium hover:bg-brown/5 transition-colors"
-              >
-                Back
-              </button>
-              <button
-                onClick={() => setStep(3)}
-                disabled={!tripType}
-                className="px-8 py-3 bg-brown text-beige rounded-full text-sm font-medium hover:bg-brown-dark transition-colors disabled:opacity-40"
-              >
-                Next
-              </button>
+          {step === 2 && (
+            <div className="flex flex-col gap-6">
+              <div>
+                <h2 className="font-bold">Who's packing?</h2>
+                <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2" role="radiogroup" aria-label="Who's packing">
+                  {MODES.map((m) => (
+                    <ChoiceTile key={m.value} selected={mode === m.value} onClick={() => setMode(m.value)} icon={m.icon} label={m.label} blurb={m.blurb} tint="bg-sun" />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h2 className="font-bold">What kind of trip?</h2>
+                <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2" role="radiogroup" aria-label="Trip type">
+                  {Object.entries(TRIP_TYPES).map(([value, t]) => (
+                    <ChoiceTile key={value} selected={tripType === value} onClick={() => setTripType(value)} icon={t.icon} label={t.label} blurb={t.blurb} tint={t.tint} />
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-between gap-3">
+                <Button variant="paper" onClick={() => setStep(1)}>
+                  <ArrowLeft size={16} strokeWidth={2.4} aria-hidden="true" /> Back
+                </Button>
+                <Button onClick={() => setStep(3)} disabled={!tripType}>
+                  Next <ArrowRight size={16} strokeWidth={2.4} aria-hidden="true" />
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Step 3: Activities */}
-        {step === 3 && (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-xs font-semibold text-brown/70 uppercase tracking-wider mb-3">
-                What activities are you planning?
-              </label>
+          {step === 3 && (
+            <div className="flex flex-col gap-6">
+              <div>
+                <h2 className="font-bold">What are you planning to do?</h2>
+                <p className="text-sm text-muted">Pick as many as you like. Each one adds the right gear.</p>
+              </div>
               <div className="flex flex-wrap gap-2">
-                {ACTIVITIES.map((act) => (
-                  <button
-                    key={act}
-                    onClick={() => toggleActivity(act)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors capitalize ${
-                      activities.includes(act)
-                        ? 'bg-orange text-white'
-                        : 'bg-white border border-brown/20 text-brown hover:border-orange/50'
-                    }`}
-                  >
-                    {act}
-                  </button>
-                ))}
+                {ACTIVITIES.map(({ value, label, icon: Icon }) => {
+                  const selected = activities.includes(value);
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => toggleActivity(value)}
+                      className={`smooth inline-flex items-center gap-1.5 rounded-full border-2 border-ink px-3.5 py-1.5 text-sm font-bold ${
+                        selected ? 'bg-ink text-card' : 'bg-card hover:bg-sun'
+                      }`}
+                    >
+                      <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex flex-wrap justify-between gap-3">
+                <Button variant="paper" onClick={() => setStep(2)}>
+                  <ArrowLeft size={16} strokeWidth={2.4} aria-hidden="true" /> Back
+                </Button>
+                <Button variant="tomato" size="lg" onClick={handleSubmit} disabled={loading}>
+                  <Sparkles size={18} strokeWidth={2.2} aria-hidden="true" />
+                  {loading ? 'Checking the weather…' : 'Make my list'}
+                </Button>
               </div>
             </div>
-
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={() => setStep(2)}
-                className="px-8 py-3 border border-brown/30 text-brown rounded-full text-sm font-medium hover:bg-brown/5 transition-colors"
-              >
-                Back
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="px-8 py-3 bg-orange text-white rounded-full text-sm font-medium hover:bg-orange-dark transition-colors disabled:opacity-50"
-              >
-                {loading ? 'Creating...' : 'Generate Packing List'}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </Card>
     </Layout>
   );
 }

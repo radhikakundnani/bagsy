@@ -2,42 +2,131 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: light;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, sans-serif;
+  background: #f4efe6;
+  color: #14100b;
+  font-family: 'Archivo', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
 }
 
-input::placeholder,
-select::placeholder {
-  color: rgba(255, 242, 218, 0.6);
+/* Headline type: slightly wide and heavy */
+.font-display {
+  font-family: 'Archivo', system-ui, sans-serif;
+  font-stretch: 115%;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
 
-::-webkit-scrollbar {
-  width: 6px;
+/* The italic serif word inside headlines */
+.font-accent {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
-::-webkit-scrollbar-track {
-  background: #FFF2DA;
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5a5248;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #D2773F;
-  border-radius: 3px;
+/* No blue browser outlines. Mouse clicks show nothing; keyboard users get a dark ring. */
+*:focus {
+  outline: none;
+}
+*:focus-visible {
+  outline: 2.5px solid #14100b;
+  outline-offset: 3px;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px #fffcf7, 0 0 0 5px #14100b;
 }
 
-@keyframes slide-in {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
+/* Chunky button: lifts on hover, presses flat on click */
+.btn {
+  box-shadow: 3px 3px 0 0 #14100b;
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease), background-color 0.18s var(--ease),
+    color 0.18s var(--ease);
+}
+.btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 0 #14100b;
+}
+.btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 0 #14100b;
+  transition-duration: 0.06s;
+}
+
+/* Cards that lift on hover */
+.lift {
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+.lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 5px 5px 0 0 #14100b;
+}
+
+.smooth {
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease), background-color 0.18s var(--ease),
+    color 0.18s var(--ease), border-color 0.18s var(--ease), opacity 0.18s var(--ease);
+}
+
+/* New page: fade + slide up */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-page-in {
+  animation: page-in 0.3s var(--ease) both;
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+.animate-pop-in {
+  animation: pop-in 0.22s var(--ease) both;
+}
+
+/* Tick box pops when checked */
+@keyframes tick {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+.animate-tick {
+  animation: tick 0.22s var(--ease);
+}
+
+/* Logo tag swings on hover */
+@keyframes swing {
+  0%, 100% { transform: rotate(-14deg); }
+  50% { transform: rotate(-4deg); }
+}
+.logo:hover .logo-tag {
+  animation: swing 0.9s var(--ease) infinite;
+  transform-origin: 20% 30%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.animate-slide-in {
-  animation: slide-in 0.3s ease-out;
 }

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-const BG_IMAGE = '/hero-bg.png';
+import AuthShell from '../components/AuthShell';
+import { Alert, Button, Field, PasswordInput, inputClass } from '../components/ui';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -11,6 +11,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const goTo = location.state?.from || '/dashboard';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,12 +20,12 @@ export default function Login() {
     setLoading(true);
     try {
       await login(email, password);
-      navigate('/dashboard');
+      navigate(goTo, { replace: true });
     } catch (err) {
       if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else if (err.code === 'ERR_NETWORK' || !err.response) {
-        setError('Server is unavailable. Please check your connection and try again.');
+        setError("Can't reach the server. Check your connection and try again.");
       } else {
         setError('Login failed. Please try again.');
       }
@@ -33,84 +35,48 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      {/* Left panel - form */}
-      <div className="w-full lg:w-1/3 relative flex flex-col">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${BG_IMAGE})` }}
-        />
-        <div className="absolute inset-0 bg-brown/85" />
+    <AuthShell title="Welcome" accent="back" intro="Your lists are right where you left them.">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {error && <Alert>{error}</Alert>}
 
-        <div className="relative z-10 flex flex-col flex-1 px-10 md:px-16 lg:px-20 py-8">
-          {/* Logo */}
-          <div className="flex items-center gap-2 mb-16">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFF2DA" strokeWidth="1.5">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-            </svg>
-            <span className="text-beige text-sm font-medium">Bagsy</span>
-          </div>
+        <Field label="Email" htmlFor="login-email">
+          <input
+            id="login-email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className={inputClass}
+          />
+        </Field>
 
-          {/* Title */}
-          <h1 className="font-serif text-4xl md:text-5xl text-white mb-12 underline underline-offset-8 decoration-1">
-            Log in
-          </h1>
+        <Field label="Password" htmlFor="login-password">
+          <PasswordInput
+            id="login-password"
+            autoComplete="current-password"
+            placeholder="Your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </Field>
+        <Link to="/forgot-password" className="-mt-2 self-end text-sm font-medium underline decoration-2 underline-offset-4 hover:text-tomato smooth">
+          Forgot password?
+        </Link>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5 max-w-sm">
-            {error && (
-              <div className="bg-red-500/20 border border-red-400/50 text-red-200 px-4 py-2 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+        <Button type="submit" variant="ink" size="lg" disabled={loading} className="mt-2 w-full">
+          {loading ? 'Logging in…' : 'Log in'}
+        </Button>
 
-            <input
-              type="email"
-              placeholder="Email or Username"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg bg-transparent border border-beige/40 text-beige placeholder-beige/50 focus:outline-none focus:border-beige transition-colors"
-            />
-
-            <div>
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-4 py-3 rounded-lg bg-transparent border border-beige/40 text-beige placeholder-beige/50 focus:outline-none focus:border-beige transition-colors"
-              />
-              <Link to="/forgot-password" className="block text-beige/50 text-xs text-right mt-1.5 hover:text-beige/70">
-                forgot password?
-              </Link>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-white text-brown font-semibold rounded-full hover:bg-beige transition-colors disabled:opacity-50 mt-2"
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
-
-            <p className="text-beige/70 text-sm text-center mt-6">
-              Don&apos;t have an account?{' '}
-              <Link to="/signup" className="text-white font-bold hover:underline">
-                SIGN UP
-              </Link>
-            </p>
-          </form>
-        </div>
-      </div>
-
-      {/* Right panel - image */}
-      <div
-        className="hidden lg:block lg:w-2/3 bg-cover bg-center"
-        style={{ backgroundImage: `url(${BG_IMAGE})` }}
-      />
-    </div>
+        <p className="text-center text-sm text-muted">
+          New here?{' '}
+          <Link to="/signup" state={location.state} className="font-bold text-ink underline decoration-2 underline-offset-4 hover:text-tomato smooth">
+            Make an account
+          </Link>
+        </p>
+      </form>
+    </AuthShell>
   );
 }
