@@ -1,16 +1,5 @@
+import { weatherEmoji, weatherSourceLabel } from '../utils/weatherLabels';
 import { useNavigate } from 'react-router-dom';
-
-function getWeatherEmoji(description) {
-  if (!description) return '🌍';
-  const d = description.toLowerCase();
-  if (d.includes('clear') || d.includes('sun')) return '☀️';
-  if (d.includes('cloud')) return '☁️';
-  if (d.includes('rain') || d.includes('drizzle')) return '🌧️';
-  if (d.includes('snow')) return '❄️';
-  if (d.includes('thunder') || d.includes('storm')) return '⛈️';
-  if (d.includes('mist') || d.includes('fog') || d.includes('haze')) return '🌫️';
-  return '🌤️';
-}
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-US', {
@@ -37,7 +26,7 @@ export default function TripCard({ trip }) {
           {trip.destination}
         </h3>
         <span className="text-2xl flex-shrink-0">
-          {getWeatherEmoji(trip.weather?.description)}
+          {weatherEmoji(trip.weather)}
         </span>
       </div>
 
@@ -61,7 +50,10 @@ export default function TripCard({ trip }) {
       {trip.weather?.temp != null && (
         <div className="mt-3 pt-3 border-t border-beige-dark/30 flex items-center gap-2 text-sm text-brown/60">
           <span className="font-medium text-brown">{Math.round(trip.weather.temp)}°C</span>
-          <span className="capitalize">{trip.weather.description}</span>
+          <span className="capitalize truncate">{trip.weather.description}</span>
+          <span className="ml-auto text-xs text-brown/40 whitespace-nowrap">
+            {weatherSourceLabel(trip.weather)}
+          </span>
         </div>
       )}
     </div>

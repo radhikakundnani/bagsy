@@ -1,6 +1,6 @@
 const Trip = require('../models/Trip');
 const PackingList = require('../models/PackingList');
-const { getWeather } = require('../services/weatherService');
+const { getTripWeather } = require('../services/weatherService');
 const { generateList } = require('../services/packingGenerator');
 
 // POST /api/trips
@@ -20,7 +20,7 @@ const createTrip = async (req, res, next) => {
       throw new Error('endDate must be after startDate');
     }
 
-    const weather = await getWeather(destination);
+    const weather = await getTripWeather(destination, start, end);
 
     const trip = await Trip.create({
       userId: req.user._id,
@@ -89,7 +89,11 @@ const updateTrip = async (req, res, next) => {
 
     const { destination, startDate, endDate, activities, tripType } = req.body;
 
-    const destinationChanged = destination && destination !== trip.destination;
+    const sameDay = (a, b) => new Date(a).getTime() === new Date(b).getTime();
+    const weatherInputsChanged =
+      (destination && destination !== trip.destination) ||
+      (startDate && !sameDay(startDate, trip.startDate)) ||
+      (endDate && !sameDay(endDate, trip.endDate));
 
     if (destination) trip.destination = destination;
     if (startDate) trip.startDate = new Date(startDate);
@@ -97,10 +101,9 @@ const updateTrip = async (req, res, next) => {
     if (activities) trip.activities = activities;
     if (tripType) trip.tripType = tripType;
 
-    // Re-fetch weather if destination changed
-    if (destinationChanged) {
-      const weather = await getWeather(destination);
-      trip.weather = weather;
+    // Weather depends on where and when, so re-fetch if either changed
+    if (weatherInputsChanged) {
+      trip.weather = await getTripWeather(trip.destination, trip.startDate, trip.endDate);
     }
 
     const updatedTrip = await trip.save();

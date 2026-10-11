@@ -30,9 +30,17 @@ const tripSchema = new mongoose.Schema({
   weather: {
     temp: Number,
     feelsLike: Number,
+    tempMin: Number,
+    tempMax: Number,
     humidity: Number,
+    windSpeed: Number,
+    weatherMain: String,
     description: String,
     icon: String,
+    // Where the weather came from: 'forecast' (next 5 days),
+    // 'typical' (same dates last year) or 'current' (today's weather)
+    source: String,
+    note: String,
   },
   createdAt: {
     type: Date,

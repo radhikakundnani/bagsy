@@ -141,7 +141,7 @@ const weatherConditionRules = [
   },
   {
     name: 'highHumidity',
-    check: (weather) => weather.humidity > 70,
+    check: (weather) => weather.humidity != null && weather.humidity > 70,
     items: [
       { name: 'Moisture-wicking clothing', category: 'clothing' },
       { name: 'Anti-chafing balm / Powder', category: 'toiletries' },
@@ -161,7 +161,7 @@ const weatherConditionRules = [
   },
   {
     name: 'veryDry',
-    check: (weather) => weather.humidity < 30,
+    check: (weather) => weather.humidity != null && weather.humidity < 30,
     items: [
       { name: 'Heavy-duty moisturizer', category: 'toiletries' },
       { name: 'Lip balm with SPF', category: 'toiletries' },
@@ -177,7 +177,7 @@ const weatherConditionRules = [
 const climateTypeRules = [
   {
     name: 'tropical',
-    check: (weather) => weather.temp > 25 && weather.humidity > 65,
+    check: (weather) => weather.temp > 25 && weather.humidity != null && weather.humidity > 65,
     items: [
       { name: 'Insect repellent (DEET / Picaridin)', category: 'toiletries' },
       { name: 'Aloe vera gel', category: 'toiletries' },
@@ -188,7 +188,7 @@ const climateTypeRules = [
   },
   {
     name: 'arid',
-    check: (weather) => weather.temp > 28 && weather.humidity < 30,
+    check: (weather) => weather.temp > 28 && weather.humidity != null && weather.humidity < 30,
     items: [
       { name: 'Wide-brim sun hat', category: 'clothing' },
       { name: 'Dust mask / Bandana', category: 'misc' },
