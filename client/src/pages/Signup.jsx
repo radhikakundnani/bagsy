@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { isStrongPassword } from '../utils/passwordRules';
+import PasswordChecklist from '../components/PasswordChecklist';
 
 const BG_IMAGE = '/hero-bg.png';
 
@@ -25,9 +27,8 @@ export default function Signup() {
       return;
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      setError('Password must be at least 8 characters long, contain an uppercase letter, a lowercase letter, a number, and a special character.');
+    if (!isStrongPassword(password)) {
+      setError("Your password doesn't meet all the rules below yet.");
       return;
     }
     if (!agreedTerms) {
@@ -115,6 +116,8 @@ export default function Signup() {
               required
               className="w-full px-4 py-3 rounded-lg bg-transparent border border-beige/40 text-beige placeholder-beige/50 focus:outline-none focus:border-beige transition-colors"
             />
+
+            {password && <PasswordChecklist password={password} />}
 
             <input
               type="password"
