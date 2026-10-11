@@ -9,6 +9,7 @@ const {
   weatherActivityCrossRefs,
   tripTypeItems,
   getDurationItems,
+  occasionItems,
 } = require('../utils/packingRules');
 
 /**
@@ -27,9 +28,10 @@ const resolveActivity = (activity) => {
  * @param {string[]}    activities - User-selected activities
  * @param {number}      duration   - Trip length in days
  * @param {string}      tripType   - "leisure" | "business" | "adventure" | "family"
+ * @param {string[]}    occasions  - wedding, conference, beach... (see utils/travellerOptions.js)
  * @returns {Array} Packing list items [{ name, category, isPacked, isCustom }]
  */
-const generateList = (weather, activities = [], duration = 3, tripType = 'leisure') => {
+const generateList = (weather, activities = [], duration = 3, tripType = 'leisure', occasions = []) => {
   const itemMap = new Map();
 
   const addItem = (item) => {
@@ -120,6 +122,11 @@ const generateList = (weather, activities = [], duration = 3, tripType = 'leisur
   if (tripTypeItems[typeKey]) {
     tripTypeItems[typeKey].forEach(addItem);
   }
+
+  // ── 8b. Occasion items (wedding, conference, trek...) ────────────────
+  (occasions || []).forEach((occasion) => {
+    (occasionItems[occasion] || []).forEach(addItem);
+  });
 
   // ── 9. Duration-based extras ──────────────────────────────────────────
   getDurationItems(safeDuration).forEach(addItem);

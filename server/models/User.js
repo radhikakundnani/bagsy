@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const { ITEMS_FOR, NEEDS } = require('../utils/travellerOptions');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -22,6 +23,12 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  // Optional, only used to tailor packing lists. Never shown to other people.
+  packingProfile: {
+    itemsFor: { type: String, enum: ITEMS_FOR },
+    homeCountry: { type: String, trim: true, maxlength: 60 },
+    needs: [{ type: String, enum: NEEDS }],
   },
   resetPasswordToken: String,
   resetPasswordExpire: Date,

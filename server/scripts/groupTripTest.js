@@ -11,6 +11,7 @@ const day = (n) => new Date(Date.now() + n * 864e5).toISOString();
 
 (async () => {
   process.env.WEATHER_API_KEY = ''; // skip real weather calls during the test
+  process.env.GEMINI_API_KEY = ''; // and skip AI calls, so the test is fast and free
   await mongoose.connect(process.env.MONGO_URI, { dbName: 'bagsy-test' });
   await mongoose.connection.dropDatabase();
 

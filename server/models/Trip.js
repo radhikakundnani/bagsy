@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { OCCASIONS } = require('../utils/travellerOptions');
 
 const tripSchema = new mongoose.Schema({
   userId: {
@@ -27,6 +28,14 @@ const tripSchema = new mongoose.Schema({
     enum: ['leisure', 'business', 'adventure', 'family'],
     default: 'leisure',
   },
+  // Optional note about the trip, e.g. "cousin's wedding, then trekking". Read by the AI.
+  brief: {
+    type: String,
+    trim: true,
+    maxlength: 300,
+  },
+  // Wedding, conference, trek... changes the list more than anything else
+  occasions: [{ type: String, enum: OCCASIONS }],
   // 'solo' = just me. 'group' = people can join with the invite link,
   // each member gets their own packing list, and the admin can see them all.
   mode: {

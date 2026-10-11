@@ -543,6 +543,74 @@ const tripTypeItems = {
   ],
 };
 
+// ─── OCCASION ITEMS ─────────────────────────────────────────────────────────
+// What the trip is for. The AI adds more specific things on top of these.
+const occasionItems = {
+  wedding: [
+    { name: 'Outfits for each wedding function', category: 'clothing' },
+    { name: 'Dress shoes / Formal footwear', category: 'clothing' },
+    { name: 'Wedding gift or gift envelope', category: 'misc' },
+    { name: 'Safety pins & mini sewing kit', category: 'misc' },
+  ],
+  festival: [
+    { name: 'Festive outfit', category: 'clothing' },
+    { name: 'Small crossbody bag', category: 'misc' },
+    { name: 'Portable power bank', category: 'electronics' },
+  ],
+  conference: [
+    { name: 'Laptop', category: 'electronics' },
+    { name: 'Laptop charger', category: 'electronics' },
+    { name: 'Smart / business outfits', category: 'clothing' },
+    { name: 'Business cards', category: 'documents' },
+    { name: 'Notebook & pen', category: 'misc' },
+  ],
+  beach: [
+    { name: 'Swimsuit', category: 'clothing' },
+    { name: 'Sunscreen SPF 50+', category: 'toiletries' },
+    { name: 'Beach towel', category: 'misc' },
+    { name: 'Flip flops', category: 'clothing' },
+  ],
+  citybreak: [
+    { name: 'Comfortable walking shoes', category: 'clothing' },
+    { name: 'Offline maps downloaded', category: 'documents' },
+    { name: 'Small day bag', category: 'misc' },
+  ],
+  outdoors: [
+    { name: 'Daypack / Hiking backpack', category: 'misc' },
+    { name: 'First aid kit', category: 'misc' },
+    { name: 'Reusable water bottle', category: 'misc' },
+    { name: 'Headlamp', category: 'electronics' },
+  ],
+  religious: [
+    { name: 'Modest clothing (covers shoulders & knees)', category: 'clothing' },
+    { name: 'Scarf / Shawl (for head covering)', category: 'clothing' },
+    { name: 'Slip-on shoes (easy to remove)', category: 'clothing' },
+  ],
+  family: [
+    { name: 'Gifts for the people you’re visiting', category: 'misc' },
+    { name: 'Home-style comfortable clothes', category: 'clothing' },
+  ],
+  backpacking: [
+    { name: 'Padlock for hostel lockers', category: 'misc' },
+    { name: 'Quick-dry towel', category: 'misc' },
+    { name: 'Earplugs & eye mask', category: 'misc' },
+    { name: 'Copies of travel documents', category: 'documents' },
+  ],
+  concert: [
+    { name: 'Earplugs (for concerts)', category: 'misc' },
+    { name: 'E-tickets saved offline', category: 'documents' },
+    { name: 'Portable power bank', category: 'electronics' },
+  ],
+  sports: [
+    { name: 'Match tickets saved offline', category: 'documents' },
+    { name: 'Team jersey / colours', category: 'clothing' },
+  ],
+  romantic: [
+    { name: 'A nice dinner outfit', category: 'clothing' },
+    { name: 'Perfume / Cologne', category: 'toiletries' },
+  ],
+};
+
 // ─── DURATION-BASED ITEMS ───────────────────────────────────────────────────
 const getDurationItems = (days) => {
   const items = [];
@@ -577,4 +645,5 @@ module.exports = {
   weatherActivityCrossRefs,
   tripTypeItems,
   getDurationItems,
+  occasionItems,
 };

@@ -3,17 +3,38 @@ const User = require('../models/User');
 const PackingList = require('../models/PackingList');
 const { getTripWeather } = require('../services/weatherService');
 const { generateList } = require('../services/packingGenerator');
+const { suggestItems } = require('../services/aiService');
 const { findTripForUser, myTripsFilter, newInviteCode, tripForRole } = require('../utils/tripAccess');
+const { OCCASIONS, ITEMS_FOR, NEEDS } = require('../utils/travellerOptions');
 
 const DAY_MS = 1000 * 60 * 60 * 24;
 const MAX_MEMBERS = 20;
 
-// Build a fresh packing list for one person on a trip
-const createListFor = (trip, userId) => {
+// The rule-based list for a trip (same for everyone on it)
+const ruleItemsFor = (trip) => {
   const durationDays = Math.ceil((trip.endDate - trip.startDate) / DAY_MS);
-  const items = generateList(trip.weather, trip.activities, durationDays, trip.tripType);
-  return PackingList.create({ tripId: trip._id, userId, items });
+  return generateList(trip.weather, trip.activities, durationDays, trip.tripType, trip.occasions);
 };
+
+// Build one person's list: the rule items, plus AI suggestions tailored to them, waiting to be kept or dismissed.
+const createListFor = async (trip, userId) => {
+  const items = ruleItemsFor(trip);
+  const person = await User.findById(userId).select('packingProfile');
+  const suggestions = await suggestItems({
+    userId,
+    trip: trip.toObject(),
+    traveller: person?.packingProfile?.toObject?.() || person?.packingProfile || {},
+    existingItems: items.map((i) => i.name),
+  });
+  return PackingList.create({ tripId: trip._id, userId, items, suggestions: suggestions.map((sug) => ({ ...sug, status: 'new' })) });
+};
+
+// Keep only known values from the "about you" answers
+const cleanPackingProfile = (raw = {}) => ({
+  itemsFor: ITEMS_FOR.includes(raw.itemsFor) ? raw.itemsFor : undefined,
+  homeCountry: typeof raw.homeCountry === 'string' ? raw.homeCountry.trim().slice(0, 60) : undefined,
+  needs: Array.isArray(raw.needs) ? [...new Set(raw.needs.filter((n) => NEEDS.includes(n)))] : [],
+});
 
 // Packed / total for a list
 const progressOf = (list) => ({
@@ -24,7 +45,7 @@ const progressOf = (list) => ({
 // POST /api/trips
 const createTrip = async (req, res, next) => {
   try {
-    const { destination, startDate, endDate, activities, tripType, mode } = req.body;
+    const { destination, startDate, endDate, activities, tripType, mode, brief, occasions, packingProfile } = req.body;
 
     if (!destination || !startDate || !endDate) {
       res.status(400);
@@ -39,6 +60,12 @@ const createTrip = async (req, res, next) => {
     }
 
     const isGroup = mode === 'group';
+
+    // "About you" answers are saved to the profile so we only ask once
+    if (packingProfile) {
+      await User.updateOne({ _id: req.user._id }, { packingProfile: cleanPackingProfile(packingProfile) });
+    }
+
     const weather = await getTripWeather(destination, start, end);
 
     const trip = await Trip.create({
@@ -48,11 +75,14 @@ const createTrip = async (req, res, next) => {
       endDate: end,
       activities: activities || [],
       tripType: tripType || 'leisure',
+      occasions: Array.isArray(occasions) ? occasions.filter((o) => OCCASIONS.includes(o)) : [],
       mode: isGroup ? 'group' : 'solo',
       inviteCode: isGroup ? newInviteCode() : undefined,
+      brief: typeof brief === 'string' ? brief.trim().slice(0, 300) : undefined,
       weather,
     });
 
+    // Rules make the base list; AI adds suggestions for this person's occasion, notes and preferences
     const packingList = await createListFor(trip, req.user._id);
 
     res.status(201).json({
@@ -289,6 +319,7 @@ const removeMember = async (req, res, next) => {
 };
 
 module.exports = {
+  cleanPackingProfile,
   createTrip,
   getTrips,
   getTripById,
