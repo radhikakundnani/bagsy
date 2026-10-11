@@ -1,12 +1,14 @@
 const Trip = require('../models/Trip');
 const PackingList = require('../models/PackingList');
+const { findTripForUser, myTripsFilter } = require('../utils/tripAccess');
 
 // GET /api/reminders/:tripId
 const getReminders = async (req, res, next) => {
   try {
     const { tripId } = req.params;
 
-    const trip = await Trip.findOne({ _id: tripId, userId: req.user._id });
+    const found = await findTripForUser(tripId, req.user._id);
+    const trip = found?.trip;
     if (!trip) {
       res.status(404);
       throw new Error('Trip not found');
@@ -59,7 +61,7 @@ const getAllReminders = async (req, res, next) => {
 
     // Find upcoming trips (start date within next 3 days and not yet ended)
     const upcomingTrips = await Trip.find({
-      userId: req.user._id,
+      ...myTripsFilter(req.user._id),
       startDate: { $gte: now, $lte: threeDaysFromNow },
     });
 

@@ -46,4 +46,7 @@ packingListSchema.pre('save', function () {
   this.updatedAt = Date.now();
 });
 
+// One list per person per trip
+packingListSchema.index({ tripId: 1, userId: 1 }, { unique: true });
+
 module.exports = mongoose.model('PackingList', packingListSchema);

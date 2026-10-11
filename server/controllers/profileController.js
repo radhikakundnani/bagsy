@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Trip = require('../models/Trip');
+const { myTripsFilter } = require('../utils/tripAccess');
 
 // GET /api/profile
 const getProfile = async (req, res, next) => {
@@ -13,13 +14,13 @@ const getProfile = async (req, res, next) => {
     const now = new Date();
 
     // Get trip statistics
-    const totalTrips = await Trip.countDocuments({ userId: req.user._id });
+    const totalTrips = await Trip.countDocuments(myTripsFilter(req.user._id));
     const upcomingTrips = await Trip.countDocuments({
-      userId: req.user._id,
+      ...myTripsFilter(req.user._id),
       startDate: { $gte: now },
     });
     const pastTrips = await Trip.find({
-      userId: req.user._id,
+      ...myTripsFilter(req.user._id),
       endDate: { $lt: now },
     })
       .sort({ endDate: -1 })
@@ -28,9 +29,9 @@ const getProfile = async (req, res, next) => {
     const completedTrips = pastTrips.length;
 
     // Get all trips for history (most recent first)
-    const allTrips = await Trip.find({ userId: req.user._id })
+    const allTrips = await Trip.find(myTripsFilter(req.user._id))
       .sort({ createdAt: -1 })
-      .select('destination startDate endDate tripType weather createdAt');
+      .select('destination startDate endDate tripType weather createdAt mode');
 
     res.json({
       success: true,

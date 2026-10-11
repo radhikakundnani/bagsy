@@ -6,12 +6,24 @@ const {
   getTripById,
   updateTrip,
   deleteTrip,
+  joinTrip,
+  previewInvite,
+  getCrew,
+  resetInvite,
+  removeMember,
 } = require('../controllers/tripController');
 const { protect } = require('../middleware/authMiddleware');
 
 router.use(protect);
 
 router.route('/').post(createTrip).get(getTrips);
+
+// Group trips
+router.route('/join/:code').get(previewInvite).post(joinTrip);
+router.get('/:id/crew', getCrew);
+router.post('/:id/invite', resetInvite);
+router.delete('/:id/members/:userId', removeMember);
+
 router.route('/:id').get(getTripById).put(updateTrip).delete(deleteTrip);
 
 module.exports = router;
