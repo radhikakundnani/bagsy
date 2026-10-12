@@ -60,7 +60,8 @@ export const activityMeta = (value) => ACTIVITIES.find((a) => a.value === value)
 export const formatDate = (dateStr, opts = { day: 'numeric', month: 'short', year: 'numeric' }) =>
   new Date(dateStr).toLocaleDateString('en-GB', opts);
 
-export const tripLength = (start, end) => Math.max(1, Math.ceil((new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24)));
+// Counts the first and last day, so 20–25 Oct is 6 days (same as the itinerary)
+export const tripLength = (start, end) => Math.max(1, Math.round((new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24)) + 1);
 
 // ─── Occasions and "about you" options (match server/utils/travellerOptions.js) ───
 

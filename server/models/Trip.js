@@ -59,6 +59,11 @@ const tripSchema = new mongoose.Schema({
     type: String,
     index: { unique: true, sparse: true },
   },
+  // Optional tabs on the trip page. The packing list is always on.
+  sections: {
+    itinerary: { type: Boolean, default: true },
+    inspo: { type: Boolean, default: true },
+  },
   weather: {
     temp: Number,
     feelsLike: Number,
