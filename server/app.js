@@ -13,6 +13,9 @@ app.use(corsMiddleware); // only our own website can call the API from a browser
 app.use(express.json({ limit: '20kb' })); // reject huge request bodies
 app.use(sanitizeBody);
 
+// quick check that the server is awake (used by the host and the uptime pinger)
+app.get('/api/health', (req, res) => res.json({ ok: true }));
+
 app.use('/api', limiters.api);
 app.use(['/api/auth/login', '/api/auth/signup', '/api/auth/forgotpassword', '/api/auth/resetpassword'], limiters.auth);
 app.post('/api/trips', limiters.costly);
