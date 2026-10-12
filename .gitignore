@@ -22,3 +22,8 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Jupyter / Anaconda
+.ipynb_checkpoints/
+.virtual_documents/
+anaconda_projects/
