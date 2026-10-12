@@ -1,6 +1,8 @@
 const Trip = require('../models/Trip');
 const User = require('../models/User');
 const PackingList = require('../models/PackingList');
+const ItineraryStop = require('../models/ItineraryStop');
+const InspoItem = require('../models/InspoItem');
 const { getTripWeather } = require('../services/weatherService');
 const { generateList } = require('../services/packingGenerator');
 const { suggestItems } = require('../services/aiService');
@@ -141,7 +143,7 @@ const updateTrip = async (req, res, next) => {
       throw new Error('Trip not found');
     }
     const { trip } = found;
-    const { destination, startDate, endDate, activities, tripType } = req.body;
+    const { destination, startDate, endDate, activities, tripType, sections } = req.body;
 
     const sameDay = (a, b) => new Date(a).getTime() === new Date(b).getTime();
     const weatherInputsChanged =
@@ -154,6 +156,12 @@ const updateTrip = async (req, res, next) => {
     if (endDate) trip.endDate = new Date(endDate);
     if (activities) trip.activities = activities;
     if (tripType) trip.tripType = tripType;
+    // Switching a section off hides it but keeps what's in it
+    if (sections && typeof sections === 'object') {
+      for (const key of ['itinerary', 'inspo']) {
+        if (typeof sections[key] === 'boolean') trip.sections[key] = sections[key];
+      }
+    }
 
     // Weather depends on where and when, so re-fetch if either changed
     if (weatherInputsChanged) {
@@ -177,6 +185,8 @@ const deleteTrip = async (req, res, next) => {
     }
 
     await PackingList.deleteMany({ tripId: found.trip._id });
+    await ItineraryStop.deleteMany({ tripId: found.trip._id });
+    await InspoItem.deleteMany({ tripId: found.trip._id });
     await Trip.deleteOne({ _id: found.trip._id });
 
     res.json({ success: true, message: 'Trip deleted' });
@@ -311,6 +321,8 @@ const removeMember = async (req, res, next) => {
     trip.members = trip.members.filter((m) => String(m.user) !== req.params.userId);
     await trip.save();
     await PackingList.deleteOne({ tripId: trip._id, userId: req.params.userId });
+    // Their private ideas go with them; what they shared with the group stays
+    await InspoItem.deleteMany({ tripId: trip._id, addedBy: req.params.userId, visibility: 'me' });
 
     res.json({ success: true, message: leavingSelf ? 'You left the trip' : 'Member removed' });
   } catch (error) {
