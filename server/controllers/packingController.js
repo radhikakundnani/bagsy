@@ -2,6 +2,9 @@ const PackingList = require('../models/PackingList');
 const User = require('../models/User');
 const Trip = require('../models/Trip');
 const { findTripForUser } = require('../utils/tripAccess');
+const { sortItem } = require('../services/itemSorter');
+
+const CATEGORY_NAMES = ['clothing', 'toiletries', 'electronics', 'documents', 'misc'];
 
 // GET /api/packing/:tripId            -> my list
 // GET /api/packing/:tripId?member=<id> -> a group member's list (trip admin only, read-only)
@@ -95,9 +98,13 @@ const addItem = async (req, res, next) => {
       throw new Error('Packing list not found');
     }
 
+    // No category picked? Let the item sorter model choose, or fall back to misc
+    let finalCategory = CATEGORY_NAMES.includes(category) ? category : null;
+    if (!finalCategory) finalCategory = (await sortItem(name))?.category || 'misc';
+
     packingList.items.push({
       name: name.trim(),
-      category: category || 'misc',
+      category: finalCategory,
       isPacked: false,
       isCustom: true,
     });
@@ -178,4 +185,15 @@ const resolveSuggestions = async (req, res, next) => {
   }
 };
 
-module.exports = { getPackingList, updateItem, addItem, deleteItem, resolveSuggestions };
+// GET /api/packing/sort-item?name=type c cable
+// The app calls this while you type, to pre-pick a category for a new item
+const sortItemCategory = async (req, res, next) => {
+  try {
+    const result = await sortItem(req.query.name);
+    res.json({ success: true, data: result && { category: result.category, confidence: Number(result.confidence.toFixed(2)), confident: result.confident } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { sortItemCategory, getPackingList, updateItem, addItem, deleteItem, resolveSuggestions };

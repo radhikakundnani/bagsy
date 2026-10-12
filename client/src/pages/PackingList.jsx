@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Check, Eye, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { ArrowLeft, Check, CircleHelp, Eye, LoaderCircle, Plus, Sparkles, Trash2 } from 'lucide-react';
 import Layout from '../components/Layout';
 import SuggestionsPanel from '../components/SuggestionsPanel';
 import { Alert, Button, ProgressBar, Spinner, Title, Toast, inputClass } from '../components/ui';
@@ -37,6 +37,11 @@ export default function PackingList() {
   const [newItemName, setNewItemName] = useState('');
   const [newItemCategory, setNewItemCategory] = useState('misc');
   const [adding, setAdding] = useState(false);
+  // Item sorter (ML): picks a category as you type, unless you've picked one yourself
+  const [sorted, setSorted] = useState(null); // { category, confidence, confident } or null
+  const [sorting, setSorting] = useState(false);
+  const [pickedByHand, setPickedByHand] = useState(false);
+  const latestSort = useRef(0);
 
   useEffect(() => {
     setLoading(true);
@@ -50,6 +55,39 @@ export default function PackingList() {
   }, [id, memberId]);
 
   const readOnly = Boolean(packingList?.readOnly);
+
+  // Ask the item sorter for a category a moment after you stop typing
+  useEffect(() => {
+    const text = newItemName.trim();
+    if (pickedByHand || text.length < 3) {
+      setSorted(null);
+      setSorting(false);
+      return undefined;
+    }
+    setSorting(true);
+    const requestId = ++latestSort.current;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await API.get('/packing/sort-item', { params: { name: text } });
+        if (requestId !== latestSort.current) return; // you kept typing; a newer answer is coming
+        const result = res.data.data;
+        setSorted(result);
+        if (result) setNewItemCategory(result.category);
+      } catch {
+        if (requestId === latestSort.current) setSorted(null); // no sorter, no problem: you pick
+      } finally {
+        if (requestId === latestSort.current) setSorting(false);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [newItemName, pickedByHand]);
+
+  const resetAddForm = () => {
+    setNewItemName('');
+    setNewItemCategory('misc');
+    setPickedByHand(false);
+    setSorted(null);
+  };
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -87,7 +125,7 @@ export default function PackingList() {
     try {
       const res = await API.post(`/packing/${id}/item`, { name: newItemName.trim(), category: newItemCategory });
       setPackingList(res.data.data);
-      setNewItemName('');
+      resetAddForm();
       showToast('Added to your list');
     } catch (err) {
       showToast(err.response?.data?.message || "Couldn't add that item.", 'error');
@@ -202,7 +240,7 @@ export default function PackingList() {
 
         <div className="flex flex-col gap-6">
           {!readOnly && (
-            <form onSubmit={handleAddItem} className="flex flex-col gap-3 sm:flex-row">
+            <form onSubmit={handleAddItem} className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <label htmlFor="pl-new" className="sr-only">
                 Item name
               </label>
@@ -210,14 +248,25 @@ export default function PackingList() {
                 id="pl-new"
                 type="text"
                 value={newItemName}
-                onChange={(e) => setNewItemName(e.target.value)}
+                onChange={(e) => {
+                  setNewItemName(e.target.value);
+                  if (!e.target.value.trim()) setPickedByHand(false);
+                }}
                 placeholder="Add something only you would remember…"
                 className={`${inputClass} sm:flex-1`}
               />
               <label htmlFor="pl-cat" className="sr-only">
                 Category
               </label>
-              <select id="pl-cat" value={newItemCategory} onChange={(e) => setNewItemCategory(e.target.value)} className={`${inputClass} sm:w-44`}>
+              <select
+                id="pl-cat"
+                value={newItemCategory}
+                onChange={(e) => {
+                  setNewItemCategory(e.target.value);
+                  setPickedByHand(true);
+                }}
+                className={`${inputClass.replace('bg-card', !pickedByHand && sorted ? (sorted.confident ? 'bg-lime' : 'bg-sun') : 'bg-card')} sm:w-52`}
+              >
                 {CATEGORY_ORDER.map((c) => (
                   <option key={c} value={c}>
                     {CATEGORIES[c].label}
@@ -227,6 +276,13 @@ export default function PackingList() {
               <Button type="submit" disabled={adding || !newItemName.trim()}>
                 <Plus size={16} strokeWidth={2.6} aria-hidden="true" /> Add
               </Button>
+              <SortHint
+                sorting={sorting}
+                sorted={sorted}
+                pickedByHand={pickedByHand}
+                category={newItemCategory}
+                onLetBagsySort={() => setPickedByHand(false)}
+              />
             </form>
           )}
 
@@ -296,5 +352,42 @@ export default function PackingList() {
         </div>
       </div>
     </Layout>
+  );
+}
+
+// The line under the add box: what the item sorter decided, and how sure it is
+function SortHint({ sorting, sorted, pickedByHand, category, onLetBagsySort }) {
+  const label = <b className="text-ink">{CATEGORIES[category]?.label || category}</b>;
+  let icon = null;
+  let text = null;
+  if (pickedByHand) {
+    icon = <Check size={15} aria-hidden="true" />;
+    text = (
+      <>
+        You picked {label}.{' '}
+        <button type="button" onClick={onLetBagsySort} className="font-bold text-ink underline underline-offset-4">
+          Let Bagsy sort it
+        </button>
+      </>
+    );
+  } else if (sorting) {
+    icon = <LoaderCircle size={15} className="animate-spin" aria-hidden="true" />;
+    text = 'Sorting…';
+  } else if (sorted?.confident) {
+    icon = <Sparkles size={15} aria-hidden="true" />;
+    text = (
+      <>
+        Sorted into {label} · {Math.round(sorted.confidence * 100)}% sure
+      </>
+    );
+  } else if (sorted) {
+    icon = <CircleHelp size={15} aria-hidden="true" />;
+    text = <>Not sure. {label}? Change it if that's wrong.</>;
+  }
+  return (
+    <p className="flex min-h-5 basis-full items-center gap-1.5 text-sm text-muted" aria-live="polite">
+      {icon}
+      {text && <span>{text}</span>}
+    </p>
   );
 }

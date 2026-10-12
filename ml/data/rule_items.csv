@@ -1,0 +1,254 @@
+item,category,source
+"Toothbrush",toiletries,rules
+"Toothpaste",toiletries,rules
+"Deodorant",toiletries,rules
+"Shampoo (travel-size)",toiletries,rules
+"Body wash / Soap",toiletries,rules
+"Phone charger",electronics,rules
+"Phone",electronics,rules
+"Passport / ID",documents,rules
+"Wallet",documents,rules
+"Travel insurance documents",documents,rules
+"Sleepwear",clothing,rules
+"Comfortable shoes",clothing,rules
+"Underwear",clothing,rules
+"Socks (pairs)",clothing,rules
+"T-shirts / Tops",clothing,rules
+"Pants / Bottoms",clothing,rules
+"Heavy winter coat",clothing,rules
+"Thermal underwear (top & bottom)",clothing,rules
+"Insulated snow boots",clothing,rules
+"Thick wool gloves",clothing,rules
+"Warm scarf",clothing,rules
+"Beanie / Warm hat",clothing,rules
+"Wool socks",clothing,rules
+"Hand warmers",misc,rules
+"Lip balm (for cold/wind)",toiletries,rules
+"Moisturizer (cold protection)",toiletries,rules
+"Winter jacket",clothing,rules
+"Sweater / Fleece",clothing,rules
+"Long-sleeve shirts",clothing,rules
+"Warm gloves",clothing,rules
+"Scarf",clothing,rules
+"Closed-toe warm shoes",clothing,rules
+"Thermal base layer",clothing,rules
+"Lip balm",toiletries,rules
+"Light jacket",clothing,rules
+"Sweater / Hoodie",clothing,rules
+"Long pants / Jeans",clothing,rules
+"Closed-toe shoes",clothing,rules
+"Light scarf (optional)",clothing,rules
+"Light layers (cardigan / thin hoodie)",clothing,rules
+"Mix of short and long-sleeve shirts",clothing,rules
+"Light pants or jeans",clothing,rules
+"Sneakers / Casual shoes",clothing,rules
+"Sunglasses",misc,rules
+"Sunscreen SPF 30+",toiletries,rules
+"Shorts",clothing,rules
+"Light breathable shirts / Tank tops",clothing,rules
+"Sandals / Flip flops",clothing,rules
+"Hat / Cap (sun protection)",clothing,rules
+"Sunscreen SPF 50+",toiletries,rules
+"Lightweight dress / Linen clothing",clothing,rules
+"Reusable water bottle",misc,rules
+"After-sun / Aloe vera gel",toiletries,rules
+"Compact umbrella",misc,rules
+"Waterproof rain jacket",clothing,rules
+"Waterproof shoe covers / Rain boots",clothing,rules
+"Quick-dry clothing",clothing,rules
+"Zip-lock bags (for electronics)",misc,rules
+"Waterproof bag / Dry bag",misc,rules
+"Snow boots / Waterproof boots",clothing,rules
+"Waterproof pants / Snow pants",clothing,rules
+"Neck gaiter / Balaclava",clothing,rules
+"Waterproof gloves",clothing,rules
+"Anti-fog spray (for glasses)",misc,rules
+"Sturdy umbrella",misc,rules
+"Rain poncho",clothing,rules
+"Waterproof bag for electronics",misc,rules
+"Waterproof jacket with hood",clothing,rules
+"Moisture-wicking clothing",clothing,rules
+"Anti-chafing balm / Powder",toiletries,rules
+"Extra deodorant",toiletries,rules
+"Quick-dry towel",misc,rules
+"Anti-frizz hair product",toiletries,rules
+"Windbreaker jacket",clothing,rules
+"Hair ties / Clips",toiletries,rules
+"Secure hat with chin strap",clothing,rules
+"Heavy-duty moisturizer",toiletries,rules
+"Lip balm with SPF",toiletries,rules
+"Nasal saline spray",toiletries,rules
+"Extra water bottle",misc,rules
+"Eye drops",toiletries,rules
+"Insect repellent (DEET / Picaridin)",toiletries,rules
+"Aloe vera gel",toiletries,rules
+"Light rain cover / Packable poncho",clothing,rules
+"Anti-itch cream (for bug bites)",toiletries,rules
+"Breathable linen clothing",clothing,rules
+"Wide-brim sun hat",clothing,rules
+"Dust mask / Bandana",misc,rules
+"Heavy-duty sunscreen SPF 50+",toiletries,rules
+"Electrolyte packets",misc,rules
+"UV-protective clothing",clothing,rules
+"Hand and toe warmers",misc,rules
+"Thermos / Insulated bottle",misc,rules
+"Chapstick (multiple)",toiletries,rules
+"Hiking boots / Trail shoes",clothing,rules
+"Daypack / Hiking backpack",misc,rules
+"Trail snacks / Energy bars",misc,rules
+"Blister plasters",toiletries,rules
+"Hiking socks (moisture-wicking)",clothing,rules
+"Trekking poles (if needed)",misc,rules
+"Swimsuit",clothing,rules
+"Swim goggles",misc,rules
+"Waterproof phone pouch",electronics,rules
+"Swim towel (microfiber)",misc,rules
+"Ear plugs (for swimming)",misc,rules
+"Comfortable walking shoes",clothing,rules
+"Camera",electronics,rules
+"Portable power bank",electronics,rules
+"City map / Offline maps downloaded",documents,rules
+"Small crossbody bag",misc,rules
+"Formal / Smart-casual outfit",clothing,rules
+"Dress shoes",clothing,rules
+"Evening clutch / Small bag",misc,rules
+"Sleeping bag",misc,rules
+"Flashlight / Headlamp",electronics,rules
+"Insect repellent",toiletries,rules
+"First aid kit",misc,rules
+"Multi-tool / Swiss knife",misc,rules
+"Matches / Lighter (waterproof)",misc,rules
+"Camping pillow",misc,rules
+"Biodegradable soap",toiletries,rules
+"Ski jacket (insulated)",clothing,rules
+"Ski pants (waterproof)",clothing,rules
+"Ski goggles",misc,rules
+"Thermal base layers",clothing,rules
+"Ski gloves (insulated)",clothing,rules
+"Helmet (or rent at resort)",misc,rules
+"Neck warmer / Balaclava",clothing,rules
+"High SPF sunscreen (snow reflects UV)",toiletries,rules
+"Beach towel",misc,rules
+"Flip flops",clothing,rules
+"Beach cover-up / Sarong",clothing,rules
+"After-sun lotion",toiletries,rules
+"Beach bag",misc,rules
+"Camera + Spare batteries",electronics,rules
+"Memory cards (extra)",electronics,rules
+"Camera cleaning kit",electronics,rules
+"Tripod (compact / travel)",electronics,rules
+"Camera bag (padded)",misc,rules
+"Foldable shopping bag / Tote",misc,rules
+"Extra luggage space / Packing cubes",misc,rules
+"Credit card / Travel card",documents,rules
+"Snorkel mask (or rent)",misc,rules
+"Reef-safe sunscreen",toiletries,rules
+"Rash guard / UV swim shirt",clothing,rules
+"Waterproof camera / GoPro",electronics,rules
+"Water shoes",clothing,rules
+"Dry bag",misc,rules
+"Rash guard",clothing,rules
+"Board shorts",clothing,rules
+"Surf wax",misc,rules
+"Waterproof watch",misc,rules
+"Cycling shorts / Padded shorts",clothing,rules
+"Helmet (or rent)",misc,rules
+"Water bottle (cycling)",misc,rules
+"Cycling gloves",clothing,rules
+"Reflective vest (for road cycling)",clothing,rules
+"Mini bike repair kit",misc,rules
+"Yoga mat (travel)",misc,rules
+"Stretchy / Flexible clothing",clothing,rules
+"Resistance bands",misc,rules
+"Going-out outfit",clothing,rules
+"Dress shoes / Heels",clothing,rules
+"Small clutch / Going-out bag",misc,rules
+"Earplugs (for concerts/clubs)",misc,rules
+"Light jacket (museums can be cold)",clothing,rules
+"Notebook / Journal",misc,rules
+"Portable charger (for audio guides)",electronics,rules
+"Modest clothing (covers shoulders & knees)",clothing,rules
+"Scarf / Shawl (for head covering)",clothing,rules
+"Slip-on shoes (easy to remove)",clothing,rules
+"Socks (for walking barefoot in temples)",clothing,rules
+"Car phone mount",electronics,rules
+"Car charger (USB)",electronics,rules
+"Snacks for the road",misc,rules
+"Neck pillow",misc,rules
+"Sunglasses (for driving)",misc,rules
+"Paper maps (backup)",documents,rules
+"Quick-dry shorts",clothing,rules
+"Fishing hat (wide brim)",clothing,rules
+"Polarized sunglasses",misc,rules
+"Waterproof boots",clothing,rules
+"Small cooler bag",misc,rules
+"Golf polo shirts",clothing,rules
+"Golf shoes",clothing,rules
+"Golf glove",clothing,rules
+"Cap / Visor",clothing,rules
+"Sunscreen",toiletries,rules
+"Climbing shoes (or rent)",clothing,rules
+"Chalk bag",misc,rules
+"Athletic tape",misc,rules
+"Running shoes",clothing,rules
+"Running shorts / Leggings",clothing,rules
+"Sports bra / Athletic top",clothing,rules
+"Reflective gear (for night runs)",clothing,rules
+"Armband phone holder",electronics,rules
+"Waterproof hiking boots",clothing,rules
+"Rain cover for backpack",misc,rules
+"Gaiters (waterproof)",clothing,rules
+"Cooling towel",misc,rules
+"Portable fan (battery)",electronics,rules
+"Reef-safe sunscreen SPF 50+",toiletries,rules
+"UV-protective rash guard",clothing,rules
+"Cooling spray bottle",misc,rules
+"Waterproof cycling jacket",clothing,rules
+"Mudguard / Fender (if renting)",misc,rules
+"Rain cover for camera",electronics,rules
+"Silica gel packets (anti-moisture)",misc,rules
+"Insulated hiking boots",clothing,rules
+"Thermos with hot drink",misc,rules
+"Emergency blanket",misc,rules
+"Laptop",electronics,rules
+"Laptop charger",electronics,rules
+"Formal shoes",clothing,rules
+"Business suits / Formal attire",clothing,rules
+"Tie / Accessories",clothing,rules
+"Notebook / Planner",misc,rules
+"Business cards",documents,rules
+"Portable WiFi hotspot",electronics,rules
+"Headlamp",electronics,rules
+"Dry bags (assorted sizes)",misc,rules
+"Emergency whistle",misc,rules
+"Paracord / Rope",misc,rules
+"Snacks (for kids & adults)",misc,rules
+"Entertainment (books / games / tablet)",misc,rules
+"First aid kit (family-size)",misc,rules
+"Wet wipes / Hand sanitizer",toiletries,rules
+"Portable charger (for devices)",electronics,rules
+"Travel games / Coloring books",misc,rules
+"Book / Kindle / E-reader",misc,rules
+"Comfortable loungewear",clothing,rules
+"Journal / Notebook",misc,rules
+"Headphones / Earbuds",electronics,rules
+"Outfits for each wedding function",clothing,rules
+"Dress shoes / Formal footwear",clothing,rules
+"Wedding gift or gift envelope",misc,rules
+"Safety pins & mini sewing kit",misc,rules
+"Festive outfit",clothing,rules
+"Smart / business outfits",clothing,rules
+"Notebook & pen",misc,rules
+"Offline maps downloaded",documents,rules
+"Small day bag",misc,rules
+"Gifts for the people you’re visiting",misc,rules
+"Home-style comfortable clothes",clothing,rules
+"Padlock for hostel lockers",misc,rules
+"Earplugs & eye mask",misc,rules
+"Copies of travel documents",documents,rules
+"Earplugs (for concerts)",misc,rules
+"E-tickets saved offline",documents,rules
+"Match tickets saved offline",documents,rules
+"Team jersey / colours",clothing,rules
+"A nice dinner outfit",clothing,rules
+"Perfume / Cologne",toiletries,rules
