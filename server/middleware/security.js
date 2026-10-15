@@ -68,6 +68,8 @@ const limiters = {
   auth: limiter(15, 20, 'Too many attempts. Please wait 15 minutes and try again.'),
   // Creating or joining trips calls the weather and AI APIs, which have quotas
   costly: limiter(60, 30, "You've made a lot of trips in the last hour. Please try again later."),
+  // The public item-sorter demo on the landing page (no login needed, so keep it tight)
+  demo: limiter(15, 60, 'That was a lot of sorting. Sign up to keep going.'),
 };
 
 const securityHeaders = helmet();
