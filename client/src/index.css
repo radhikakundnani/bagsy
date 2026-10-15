@@ -145,3 +145,121 @@ select {
     transition: none !important;
   }
 }
+
+/* ─── Landing page (Home) ─────────────────────────────────────────────
+   Louder than the rest of the app on purpose: the landing page sells, the app stays calm. */
+html,
+body {
+  overflow-x: clip;
+}
+.lp-display {
+  font-family: 'Archivo', system-ui, sans-serif;
+  font-stretch: 118%;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 0.92;
+  text-wrap: balance;
+}
+.lp-word {
+  display: inline-block;
+  padding: 0 0.12em;
+  border: 2px solid #14100b;
+  border-radius: 0.22em;
+  margin: 0.04em 0.02em;
+  transition: transform 0.3s var(--ease);
+}
+.lp-word:hover {
+  transform: rotate(-4deg) scale(1.05) !important;
+}
+.lp-tag {
+  transform-origin: 22% 18%;
+  transition: transform 0.25s var(--ease);
+  filter: drop-shadow(8px 10px 0 #14100b);
+}
+.lp-burst {
+  animation: lp-spin 18s linear infinite;
+}
+.lp-burst > span {
+  animation: lp-spin 18s linear infinite reverse;
+}
+@keyframes lp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.lp-sticker {
+  position: absolute;
+  z-index: 5;
+  user-select: none;
+  touch-action: none;
+  cursor: grab;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.lp-sticker.dragging {
+  cursor: grabbing;
+  box-shadow: 8px 8px 0 #14100b;
+  z-index: 20;
+}
+.lp-marquee-track {
+  display: flex;
+  gap: 42px;
+  width: max-content;
+  white-space: nowrap;
+  animation: lp-slide 32s linear infinite;
+}
+.lp-marquee-track > span {
+  display: flex;
+  align-items: center;
+  gap: 42px;
+}
+.lp-marquee-track > span::after {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fbe6b5;
+  border: 2px solid #14100b;
+}
+@keyframes lp-slide {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.lp-item {
+  animation: lp-drop 0.35s var(--ease) both;
+}
+@keyframes lp-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+.lp-stamp {
+  transform: rotate(-12deg) scale(2.2);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1), opacity 0.2s;
+}
+.lp-stamp.on {
+  transform: rotate(-12deg) scale(1);
+  opacity: 1;
+}
+.lp-fan .lp-card {
+  transition: transform 0.45s var(--ease);
+}
+.lp-fan .lp-card.c1 { transform: translateX(-50%) rotate(-8deg); }
+.lp-fan .lp-card.c2 { transform: translateX(-50%) rotate(2deg); }
+.lp-fan .lp-card.c3 { transform: translateX(-50%) rotate(10deg); }
+.lp-fan:hover .lp-card.c1,
+.lp-fan.spread .lp-card.c1 { transform: translateX(-140%) rotate(-12deg); }
+.lp-fan:hover .lp-card.c2,
+.lp-fan.spread .lp-card.c2 { transform: translateX(-50%) translateY(-14px); }
+.lp-fan:hover .lp-card.c3,
+.lp-fan.spread .lp-card.c3 { transform: translateX(40%) rotate(12deg); }
+@media (prefers-reduced-motion: reduce) {
+  .lp-burst,
+  .lp-burst > span,
+  .lp-marquee-track,
+  .lp-item {
+    animation: none !important;
+  }
+}
