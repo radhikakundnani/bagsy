@@ -2,6 +2,9 @@
 
 **Plan it, pack it, post it. Together.**
 
+**Live:** [bagsy-pi.vercel.app](https://bagsy-pi.vercel.app)  
+<sub>Hosted on free plans: the first request after a quiet spell can take up to a minute while the server wakes up.</sub>
+
 Bagsy is a trip planner for people who travel in groups and overpack anyway. Tell it where you're going, when and why, and it builds a packing list around the weather on your exact dates, the occasion and what you'll get up to. Then plan the days together, collect the reels and photo ideas you want to recreate, and tick things off as you pack.
 
 > *Bagsy* (British slang): to call dibs. "Bagsy the window seat."
